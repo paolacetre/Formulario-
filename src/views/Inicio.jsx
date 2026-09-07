@@ -15,7 +15,7 @@ function Inicio() {
             <Link className="boton boton-principal" to="/buscar">
               Buscar ocupación
             </Link>
-            <Link className="boton boton-secundario" to="/formulario">
+            <Link className="boton boton-opcional" to="/formulario">
               Solicitar creación de ocupación
             </Link>
           </nav>

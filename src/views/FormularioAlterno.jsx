@@ -64,35 +64,64 @@ function FormularioAlterno() {
   return (
     <main className="pagina formulario-alterno-pagina">
       <form className="formulario-alterno" onSubmit={enviar}>
-        <div className="alterno-datos-superiores">
+        <header className="alterno-cabecera">
+          <span className="etiqueta">FORMULARIO DE SOLICITUD</span>
+          <h1>Solicitud de actualización ocupacional</h1>
+          <p>Complete la información de la solicitud y detalle los cambios requeridos.</p>
+        </header>
+
+        <fieldset className="alterno-datos-superiores">
+          <legend className="sr-only">Datos iniciales de la solicitud</legend>
           <div className="alterno-campo"><label htmlFor="solicitudNo">SOLICITUD No.</label><input id="solicitudNo" name="solicitudNo" value={formulario.solicitudNo} onChange={cambiar} placeholder="Solicitud No." disabled /></div>
           <div className="alterno-campo"><label htmlFor="ciudad">CIUDAD:</label><input id="ciudad" name="ciudad" value={formulario.ciudad} onChange={cambiar} placeholder="Ciudad" /></div>
           <div className="alterno-campo"><label htmlFor="fecha">FECHA:</label><input id="fecha" name="fecha" type="date" value={formulario.fecha} onChange={cambiar} /></div>
-        </div>
+        </fieldset>
 
         <Seccion titulo="DATOS DEL SOLICITANTE">
-          <div className="alterno-label">Tipo de persona:</div>
-          <div className="alterno-opciones"><Check name="tipoPersona" value="Natural" checked={formulario.tipoPersona.includes("Natural")} onChange={cambiar} /><Check name="tipoPersona" value="Jurídica" checked={formulario.tipoPersona.includes("Jurídica")} onChange={cambiar} /></div>
+          <fieldset className="alterno-grupo-opciones">
+            <legend className="alterno-label">Tipo de persona</legend>
+            <div className="alterno-opciones"><Check name="tipoPersona" value="Natural" checked={formulario.tipoPersona.includes("Natural")} onChange={cambiar} /><Check name="tipoPersona" value="Jurídica" checked={formulario.tipoPersona.includes("Jurídica")} onChange={cambiar} /></div>
+          </fieldset>
           <div className="alterno-campo alterno-completo"><label htmlFor="nombre">Nombres y apellidos:</label><input id="nombre" name="nombre" value={formulario.nombre} onChange={cambiar} placeholder="Nombres y apellidos" /></div>
           <div className="alterno-grid"><Campo id="entidad" label="Entidad" value={formulario.entidad} onChange={cambiar} placeholder="Entidad" /><Campo id="cargo" label="Cargo" value={formulario.cargo} onChange={cambiar} placeholder="Cargo" /><Campo id="telefono" label="Teléfono" value={formulario.telefono} onChange={cambiar} placeholder="999-9999" /><Campo id="celular" label="Celular" value={formulario.celular} onChange={cambiar} placeholder="999-9999" /><Campo id="correo" label="Correo" type="email" value={formulario.correo} onChange={cambiar} placeholder="Correo electrónico" /></div>
         </Seccion>
 
         <Seccion titulo="DATOS DE LA SOLICITUD">
-          <div className="alterno-label">Tipo de solicitud:</div>
-          <div className="alterno-opciones"><Check name="tipoSolicitud" value="Ajuste" checked={formulario.tipoSolicitud.includes("Ajuste")} onChange={cambiar} /><Check name="tipoSolicitud" value="Inclusión de nueva ocupación" checked={formulario.tipoSolicitud.includes("Inclusión de nueva ocupación")} onChange={cambiar} /></div>
+          <fieldset className="alterno-grupo-opciones">
+            <legend className="alterno-label">Tipo de solicitud</legend>
+            <div className="alterno-opciones"><Check name="tipoSolicitud" value="Ajuste" checked={formulario.tipoSolicitud.includes("Ajuste")} onChange={cambiar} /><Check name="tipoSolicitud" value="Inclusión de nueva ocupación" checked={formulario.tipoSolicitud.includes("Inclusión de nueva ocupación")} onChange={cambiar} /></div>
+          </fieldset>
           <label className="alterno-select-label" htmlFor="ocupacionBase">Escriba el código o el nombre de la ocupación sobre la cual tiene observaciones:</label>
           <select className="alterno-select" id="ocupacionBase" name="ocupacionBase" value={formulario.ocupacionBase} onChange={cambiar} disabled={!esAjuste}><option value="">{esAjuste ? "Seleccione una ocupación" : "No aplica para inclusión de nueva ocupación"}</option>{ocupacionesMock.map((ocupacion) => <option value={ocupacion.id} key={ocupacion.id}>{ocupacion.codigo} {ocupacion.nombre}</option>)}</select>
           {ocupacionSeleccionada && <div className="ocupacion-seleccionada"><strong>{ocupacionSeleccionada.codigo} · {ocupacionSeleccionada.nombre}</strong><span>{ocupacionSeleccionada.descripcion}</span></div>}
           <div className="alterno-secciones">
-            {secciones.map(([id, titulo, placeholder]) => <div className="alterno-fila" key={id}><label><input type="checkbox" name="seccionesActivas" value={id} checked={formulario.seccionesActivas.includes(id)} onChange={cambiar} disabled={!ocupacionSeleccionada && esAjuste} /> {titulo}{ocupacionSeleccionada && <button type="button" className="alterno-ver" onClick={() => setReferenciasVisibles({ ...referenciasVisibles, [id]: !referenciasVisibles[id] })}>+ {referenciasVisibles[id] ? "Ocultar" : "Ver"} {titulo}</button>}{referenciasVisibles[id] && <span className="alterno-info">{obtenerInformacion(ocupacionSeleccionada, id)}</span>}</label><div className="alterno-respuesta"><textarea name={`respuesta-${id}`} value={formulario.respuestas[id]} onChange={(evento) => setFormulario({ ...formulario, respuestas: { ...formulario.respuestas, [id]: evento.target.value } })} placeholder={esAjuste ? "Escriba aquí el ajuste propuesto" : placeholder} rows="4" disabled={esAjuste && !formulario.seccionesActivas.includes(id)} />{["conocimientos", "destrezas", "areaCualificacion"].includes(id) && <div className="alterno-referencia"><select className="alterno-select" aria-label={`Lista de ${titulo}`} disabled={esAjuste && !formulario.seccionesActivas.includes(id)}><option>{titulo}</option></select><button type="button" className="alterno-pdf" title={`Abrir información de ${titulo}`} aria-label={`Abrir información de ${titulo}`} onClick={() => window.open(`/referencias/${id}.pdf`, "_blank", "noopener,noreferrer")}><span className="material-icons">picture_as_pdf</span></button><small>Puede proponer más de la lista desplegable</small></div>}</div></div>)}
+            {secciones.map(([id, titulo, placeholder]) => (
+              <div className="alterno-fila" key={id}>
+                <div className="alterno-fila-etiqueta">
+                  <label htmlFor={`respuesta-${id}`}>
+                    <input type="checkbox" name="seccionesActivas" value={id} checked={formulario.seccionesActivas.includes(id)} onChange={cambiar} disabled={!ocupacionSeleccionada && esAjuste} />
+                    {titulo}
+                  </label>
+                  {ocupacionSeleccionada && <button type="button" className="alterno-ver" onClick={() => setReferenciasVisibles({ ...referenciasVisibles, [id]: !referenciasVisibles[id] })}>+ {referenciasVisibles[id] ? "Ocultar" : "Ver"} {titulo}</button>}
+                  {referenciasVisibles[id] && <span className="alterno-info">{obtenerInformacion(ocupacionSeleccionada, id)}</span>}
+                </div>
+                <div className="alterno-respuesta">
+                  <label className="sr-only" htmlFor={`respuesta-${id}`}>Respuesta para {titulo}</label>
+                  <textarea id={`respuesta-${id}`} name={`respuesta-${id}`} value={formulario.respuestas[id]} onChange={(evento) => setFormulario({ ...formulario, respuestas: { ...formulario.respuestas, [id]: evento.target.value } })} placeholder={esAjuste ? "Escriba aquí el ajuste propuesto" : placeholder} rows="4" disabled={esAjuste && !formulario.seccionesActivas.includes(id)} />
+                  {["conocimientos", "destrezas", "areaCualificacion"].includes(id) && <div className="alterno-referencia"><label className="sr-only" htmlFor={`referencia-${id}`}>Lista de {titulo}</label><select id={`referencia-${id}`} className="alterno-select" disabled={esAjuste && !formulario.seccionesActivas.includes(id)}><option>{titulo}</option></select><button type="button" className="alterno-pdf" title={`Abrir información de ${titulo}`} aria-label={`Abrir información de ${titulo}`} onClick={() => window.open(`/referencias/${id}.pdf`, "_blank", "noopener,noreferrer")}><span aria-hidden="true" className="material-icons">picture_as_pdf</span></button><small>Puede proponer más de la lista desplegable</small></div>}
+                </div>
+              </div>
+            ))}
           </div>
           <div className="alterno-campo alterno-completo"><label htmlFor="observacion">Observación, propuesta o requerimiento:</label><textarea id="observacion" name="observacion" value={formulario.observacion} onChange={cambiar} placeholder="Observaciones" rows="5" /></div>
           <div className="alterno-adjunto"><span className="alterno-adjunto-titulo">Anexar archivo</span><label className="alterno-archivo-boton" htmlFor="archivo">Seleccionar archivo</label><input id="archivo" name="archivo" type="file" onChange={cambiar} /><span className="alterno-archivo-nombre">{formulario.archivo?.name || "Ningún archivo seleccionado"}</span></div>
         </Seccion>
 
         <Seccion titulo="SEGUIMIENTO DE LA SOLICITUD">
-          <div className="alterno-pregunta">¿Había realizado anteriormente esta solicitud?</div>
-          <div className="alterno-opciones"><Check name="realizoDane" value="Sí" type="radio" checked={formulario.realizoDane === "Sí"} onChange={cambiar} /><Check name="realizoDane" value="No" type="radio" checked={formulario.realizoDane === "No"} onChange={cambiar} /></div>
+          <fieldset className="alterno-grupo-opciones">
+            <legend className="alterno-pregunta">¿Había realizado anteriormente esta solicitud?</legend>
+            <div className="alterno-opciones"><Check name="realizoDane" value="Sí" type="radio" checked={formulario.realizoDane === "Sí"} onChange={cambiar} /><Check name="realizoDane" value="No" type="radio" checked={formulario.realizoDane === "No"} onChange={cambiar} /></div>
+          </fieldset>
           <div className="alterno-grid"><Campo id="fechaDane" label="Fecha" type="date" value={formulario.fechaDane} onChange={cambiar} /><Campo id="numeroSolicitud" label="Número de la solicitud" value={formulario.numeroSolicitud} onChange={cambiar} placeholder="Solicitud No." /><Campo id="funcionario" label="Nombre del funcionario que atendió la solicitud" value={formulario.funcionario} onChange={cambiar} placeholder="Funcionario que atendió la solicitud" /></div>
           <div className="alterno-campo alterno-completo"><label htmlFor="observacionesDane">Observaciones:</label><textarea id="observacionesDane" name="observacionesDane" value={formulario.observacionesDane} onChange={cambiar} placeholder="Observaciones" rows="5" /></div>
         </Seccion>
@@ -106,7 +135,7 @@ function FormularioAlterno() {
 
 function Campo({ id, label, type = "text", value, onChange, placeholder }) { return <div className="alterno-campo"><label htmlFor={id}>{label}:</label><input id={id} name={id} type={type} value={value} onChange={onChange} placeholder={placeholder} /></div>; }
 function Check({ name, value, type = "checkbox", checked, onChange }) { return <label className="alterno-check"><input name={name} value={value} type={type} checked={checked} onChange={onChange} />{value}</label>; }
-function Seccion({ titulo, children }) { return <section className="alterno-bloque"><h2>☷ {titulo}</h2>{children}</section>; }
+function Seccion({ titulo, children }) { return <fieldset className="alterno-bloque"><legend>☷ {titulo}</legend>{children}</fieldset>; }
 function obtenerInformacion(ocupacion, id) {
   if (!ocupacion) return "";
   if (id === "ocupacion") return `${ocupacion.codigo} ${ocupacion.nombre}`;

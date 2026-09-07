@@ -2,6 +2,7 @@ function ResultadosOcupacion({ resultados, onSeleccionar }) {
   return (
     <div className="tabla-resultados-wrapper">
       <table className="tabla-resultados">
+        <caption>Resultados de búsqueda de ocupaciones</caption>
         <thead>
           <tr>
             <th scope="col">Código</th>

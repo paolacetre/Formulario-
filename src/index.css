@@ -1,7 +1,11 @@
+@import url("https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&display=swap");
+
 :root {
-  font-family: "Aptos", "Segoe UI", sans-serif;
-  color: #243447;
-  background: #edf3f7;
+  font-family: "Work Sans", "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #001631;
+  background: #ffffff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -9,7 +13,7 @@
 
 * { box-sizing: border-box; }
 
-body { min-width: 320px; margin: 0; }
+body { min-width: 0; margin: 0; }
 
 button, input, textarea { font: inherit; }
 button { cursor: pointer; }

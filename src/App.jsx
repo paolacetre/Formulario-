@@ -49,6 +49,7 @@ function App() {
         <Route path="/formulario-alterno" element={<FormularioAlterno />} />
         <Route path="/admin" element={<AdminOcupaciones />} />
       </Routes>
+
     </>
   );
 }

@@ -94,9 +94,9 @@ function AdminOcupaciones() {
           </p>
         </header>
 
-        <section className="admin-seccion">
+        <section className="admin-seccion" aria-labelledby="titulo-carga">
           <div className="seccion-header">
-            <h2>1. Cargar archivo</h2>
+            <h2 id="titulo-carga">1. Cargar archivo</h2>
             <p>Formatos permitidos: Excel .xlsx o .xls.</p>
           </div>
 
@@ -131,9 +131,9 @@ function AdminOcupaciones() {
         </section>
 
         {resumen && (
-          <section className="admin-seccion admin-resumen">
+          <section className="admin-seccion admin-resumen" aria-labelledby="titulo-resumen">
             <div className="seccion-header">
-              <h2>2. Resumen de validación</h2>
+              <h2 id="titulo-resumen">2. Resumen de validación</h2>
               <p>Revise el resultado antes de publicar la nueva versión.</p>
             </div>
             <dl className="resumen-grid">
@@ -158,25 +158,25 @@ function AdminOcupaciones() {
           </div>
         )}
 
-        <section className="admin-seccion">
+        <section className="admin-seccion" aria-labelledby="titulo-versiones">
           <div className="seccion-header">
-            <h2>Versiones del catálogo</h2>
+            <h2 id="titulo-versiones">Versiones del catálogo</h2>
             <p>El historial se conservará cuando exista persistencia real.</p>
           </div>
-          <div className="versiones-tabla">
+          <ul className="versiones-tabla">
             {versiones.length === 0 ? (
-              <p className="versiones-vacias">Aún no existen versiones cargadas.</p>
+              <li className="versiones-vacias">Aún no existen versiones cargadas.</li>
             ) : (
               versiones.map((version) => (
-                <div key={version.id}>
+                <li key={version.id}>
                   <strong>Catálogo {version.anio}<small>{version.archivo} · {version.fecha}</small></strong>
                   <span className={`estado-version ${version.estado.toLocaleLowerCase()}`}>
                     {version.estado}
                   </span>
-                </div>
+                </li>
               ))
             )}
-          </div>
+          </ul>
         </section>
       </section>
     </main>

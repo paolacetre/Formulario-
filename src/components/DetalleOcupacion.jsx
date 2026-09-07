@@ -13,66 +13,83 @@ const pestañas = [
 function DetalleOcupacion({ ocupacion, onVolver }) {
   const [pestañaActiva, setPestañaActiva] = useState("general");
 
-  const contenidoLista = (elementos) => {
+  const contenidoLista = (id, titulo, elementos) => {
     if (elementos.length === 0) {
-      return <p className="detalle-sin-datos">No hay información disponible para esta ocupación.</p>;
+      return (
+        <section aria-labelledby={`${id}-titulo`}>
+          <h2 id={`${id}-titulo`}>{titulo}</h2>
+          <p className="detalle-sin-datos">No hay información disponible para esta ocupación.</p>
+        </section>
+      );
     }
 
     return (
-      <ul className="detalle-lista">
-        {elementos.map((elemento, indice) => (
-          <li key={typeof elemento === "string" ? elemento : `${elemento.codigo}-${indice}`}>
-            {typeof elemento === "string" ? (
-              elemento
-            ) : (
-              <>
-                {elemento.codigo && <strong>{elemento.codigo}</strong>}
-                <span>{elemento.descripcion}</span>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
+      <section aria-labelledby={`${id}-titulo`}>
+        <h2 id={`${id}-titulo`}>{titulo}</h2>
+        <ul className="detalle-lista">
+          {elementos.map((elemento, indice) => (
+            <li key={typeof elemento === "string" ? elemento : `${elemento.codigo}-${indice}`}>
+              {typeof elemento === "string" ? (
+                elemento
+              ) : (
+                <>
+                  {elemento.codigo && <strong>{elemento.codigo}</strong>}
+                  <span>{elemento.descripcion}</span>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
     );
   };
 
   const contenidoPestaña = {
     general: (
-      <div className="detalle-general">
-        <div><span>Código</span><strong>{ocupacion.codigo}</strong></div>
-        <div><span>Nombre</span><strong>{ocupacion.nombre}</strong></div>
-        <div><span>Clasificación</span><strong>{ocupacion.clasificacion}</strong></div>
-        <div><span>Nivel</span><strong>{ocupacion.nivel || "No disponible"}</strong></div>
-        <div><span>Área de desempeño</span><strong>{ocupacion.areaDesempeno || "No disponible"}</strong></div>
-        <div className="detalle-descripcion"><span>Descripción</span><p>{ocupacion.descripcion}</p></div>
-      </div>
+      <section aria-labelledby="general-titulo">
+        <h2 id="general-titulo">Información general</h2>
+        <dl className="detalle-general">
+          <div><dt>Código</dt><dd>{ocupacion.codigo}</dd></div>
+          <div><dt>Nombre</dt><dd>{ocupacion.nombre}</dd></div>
+          <div><dt>Clasificación</dt><dd>{ocupacion.clasificacion}</dd></div>
+          <div><dt>Nivel</dt><dd>{ocupacion.nivel || "No disponible"}</dd></div>
+          <div><dt>Área de desempeño</dt><dd>{ocupacion.areaDesempeno || "No disponible"}</dd></div>
+          <div className="detalle-descripcion"><dt>Descripción</dt><dd>{ocupacion.descripcion}</dd></div>
+        </dl>
+      </section>
     ),
-    funciones: contenidoLista(ocupacion.funciones),
-    habilidades: contenidoLista(ocupacion.habilidades),
-    conocimientos: contenidoLista(ocupacion.conocimientos),
-    denominaciones: contenidoLista(ocupacion.denominaciones),
-    relaciones: contenidoLista(ocupacion.relaciones),
+    funciones: contenidoLista("funciones", "Funciones", ocupacion.funciones),
+    habilidades: contenidoLista("habilidades", "Habilidades", ocupacion.habilidades),
+    conocimientos: contenidoLista("conocimientos", "Conocimientos", ocupacion.conocimientos),
+    denominaciones: contenidoLista("denominaciones", "Denominaciones", ocupacion.denominaciones),
+    relaciones: contenidoLista("relaciones", "Relaciones", ocupacion.relaciones),
   };
 
   return (
-    <section className="detalle-card" aria-labelledby="detalle-titulo">
-      <div className="detalle-cabecera">
+    <article className="detalle-card" aria-labelledby="detalle-titulo">
+      <header className="detalle-cabecera">
         <button type="button" className="boton boton-secundario" onClick={onVolver}>
           Volver a resultados
         </button>
         <span className="etiqueta">DETALLE DE OCUPACIÓN</span>
         <h1 id="detalle-titulo">{ocupacion.nombre}</h1>
         <p>Información completa de la ocupación seleccionada.</p>
-      </div>
+      </header>
       <TabsOcupacion
         pestañas={pestañas}
         pestañaActiva={pestañaActiva}
         onCambiar={setPestañaActiva}
       />
-      <div className="detalle-contenido" role="tabpanel">
+      <section
+        className="detalle-contenido"
+        id="panel-ocupacion"
+        role="tabpanel"
+        aria-labelledby={`tab-${pestañaActiva}`}
+        tabIndex={0}
+      >
         {contenidoPestaña[pestañaActiva]}
-      </div>
-    </section>
+      </section>
+    </article>
   );
 }
 
