@@ -190,6 +190,18 @@ h1 { margin-bottom: 12px; color: var(--azul-profundo); font-size: 26px; font-wei
 .inicio-card h1 { max-width: 480px; }
 .formulario-header p, .inicio-card p { max-width: 650px; margin-bottom: 0; color: var(--texto-suave); line-height: 1.6; }
 
+.progreso-formulario { margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--borde); }
+.progreso-formulario ol { display: grid; grid-template-columns: repeat(9, minmax(74px, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.progreso-item { min-width: 0; }
+.progreso-item button { display: flex; width: 100%; min-height: 68px; flex-direction: column; align-items: center; gap: 7px; padding: 5px; border: 0; background: transparent; color: var(--texto-suave); font: inherit; font-size: 0.72rem; line-height: 1.25; text-align: center; }
+.progreso-item button:not(:disabled) { cursor: pointer; }
+.progreso-item button:disabled { cursor: default; }
+.progreso-numero { display: grid; place-items: center; width: 28px; height: 28px; border: 2px solid var(--borde); border-radius: 50%; background: var(--blanco); color: var(--texto-suave); font-weight: 800; }
+.progreso-item.completada button, .progreso-item.actual button { color: var(--azul-profundo); font-weight: 700; }
+.progreso-item.completada .progreso-numero { border-color: var(--verde-principal); background: var(--verde-principal); color: white; }
+.progreso-item.actual .progreso-numero { border-color: var(--azul-profundo); background: var(--azul-profundo); color: white; }
+.progreso-item button:focus-visible { outline: 3px solid rgba(31, 172, 227, 0.3); outline-offset: 2px; }
+
 .formulario-seccion { min-inline-size: 0; margin: 0; padding: 34px 56px 36px; border: 0; }
 .formulario-seccion + .formulario-seccion { border-top: 1px solid var(--borde); }
 .seccion-header { margin-bottom: 26px; }
@@ -233,6 +245,8 @@ select:disabled { cursor: not-allowed; opacity: 0.65; }
 
 .referencia-formulario { margin: 0 56px; padding: 14px 18px; border: 1px solid #ecd8a2; background: #fff9e8; color: #765a17; font-size: 0.88rem; line-height: 1.5; }
 .referencia-formulario strong { color: #5f4914; }
+.error-formulario { margin: 0 56px 20px; padding: 14px 18px; border: 1px solid #e4b8b8; background: #fff3f3; color: #8a2f2f; line-height: 1.5; }
+.estado-guardado { margin: 0 56px 20px; color: var(--texto-suave); font-size: 0.86rem; }
 .instrumento-seccion { background: #fff; }
 .instrumento-seccion + .instrumento-seccion { border-top: 1px solid var(--borde); }
 .instrumento-seccion .seccion-header { margin-bottom: 22px; }
@@ -248,6 +262,18 @@ select:disabled { cursor: not-allowed; opacity: 0.65; }
 .opcion-catalogo { display: flex; align-items: center; gap: 9px; min-height: 46px; padding: 10px 12px; border: 1px solid var(--borde); border-radius: 6px; background: #fbfdfe; color: var(--texto); font-size: 0.9rem; cursor: pointer; }
 .opcion-catalogo:hover, .opcion-catalogo.seleccionada { border-color: #94b5c7; background: var(--azul-claro); color: var(--azul-profundo); }
 .opcion-catalogo input { width: 17px; min-height: 17px; margin: 0; accent-color: var(--azul); }
+
+.revision-seccion h2 { margin-bottom: 8px; }
+.revision-grupo { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--borde); }
+.revision-grupo h3 { margin: 0 0 16px; color: var(--azul-profundo); font-size: 1rem; }
+.revision-grupo dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; margin: 0; }
+.revision-grupo dl > div { min-width: 0; }
+.revision-grupo dl > .revision-campo-completo { grid-column: 1 / -1; }
+.revision-grupo dt { margin-bottom: 5px; color: var(--texto-suave); font-size: 0.78rem; font-weight: 700; }
+.revision-grupo dd { margin: 0; color: var(--texto); line-height: 1.45; overflow-wrap: anywhere; white-space: pre-wrap; }
+.revision-vacio { color: var(--texto-suave); font-style: italic; }
+.revision-lista { display: grid; gap: 8px; margin: 0; padding-left: 20px; }
+.revision-lista li { padding-left: 4px; }
 
 .formulario-alterno-pagina { padding: 24px 30px 34px; background: #fff; }
 .formulario-alterno { width: min(100%, 1100px); margin: 0 auto; color: var(--texto); font-size: 16px; }
@@ -305,10 +331,14 @@ select:disabled { cursor: not-allowed; opacity: 0.65; }
   .pagina { padding: 20px 12px; }
   .inicio-card { padding: 48px 24px; }
   .formulario-header, .formulario-seccion { padding-right: 24px; padding-left: 24px; }
+  .progreso-formulario { overflow-x: auto; margin-right: -24px; margin-left: -24px; padding-right: 24px; padding-left: 24px; }
+  .progreso-formulario ol { width: max-content; min-width: 100%; grid-template-columns: repeat(9, minmax(92px, 1fr)); }
   .form-grid { grid-template-columns: 1fr; gap: 20px; }
   .campo-completo { grid-column: auto; }
   .referencia-formulario { margin-right: 24px; margin-left: 24px; }
+  .error-formulario, .estado-guardado { margin-right: 24px; margin-left: 24px; }
   .opciones-catalogo { grid-template-columns: 1fr; }
+  .revision-grupo dl { grid-template-columns: 1fr; }
   .formulario-alterno-pagina { padding: 16px 12px 24px; }
   .alterno-datos-superiores, .alterno-grid, .alterno-fila { grid-template-columns: 1fr; }
   .alterno-fila .alterno-select, .alterno-fila small { grid-column: auto; }

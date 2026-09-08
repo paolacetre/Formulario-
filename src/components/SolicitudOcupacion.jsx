@@ -1,95 +1,90 @@
 import { useEffect, useState } from "react";
-import {
-  AREAS_DESEMPENO,
-  DEPARTAMENTOS,
-  HABILIDADES_CATALOGO,
-  CONOCIMIENTOS_CATALOGO,
-  MUNICIPIOS_POR_DEPARTAMENTO,
-  NIVELES_CUALIFICACION,
-  SECTORES,
-} from "../data/instrumento3.models";
+import { eliminarBorrador, guardarBorrador, obtenerBorrador } from "../services/formularioStorage";
+import DatosGenerales from "./DatosGenerales";
+import PropuestaOcupacion from "./PropuestaOcupacion";
+import FuncionesPrincipales from "./FuncionesPrincipales";
+import DenominacionesOcupacionales from "./DenominacionesOcupacionales";
+import OcupacionesRelacionadas from "./OcupacionesRelacionadas";
+import Habilidades from "./Habilidades";
+import Conocimientos from "./Conocimientos";
+import Justificacion from "./Justificacion";
+import ProgresoFormulario from "./ProgresoFormulario";
+import RevisionSolicitud from "./RevisionSolicitud";
 
 const formularioInicial = {
-  fecha: new Date().toISOString().slice(0, 10), nombreCompleto: "", documentoIdentidad: "", correo: "", telefono: "",
+  fecha: new Date().toISOString().slice(0, 10), nombreApellidos: "", documentoIdentidad: "", email: "", telefono: "",
   departamento: "", municipio: "", empresaEntidad: "", cargo: "", profesion: "", sector: "",
   nombreOcupacion: "", areaDesempeno: "", nivelCualificacion: "", descripcion: "", justificacion: "",
-  funciones: ["", "", ""], denominaciones: ["", "", ""], ocupacionesRelacionadas: ["", ""], habilidades: [], conocimientos: [],
+  funciones: ["", "", ""], denominaciones: ["", ""], ocupacionesRelacionadas: ["", ""], habilidades: [], conocimientos: [],
   otrasHabilidades: "", otrosConocimientos: "",
 };
 
-function SolicitudOcupacion() {
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+const ultimaSesion = 9;
 
-  const [formulario, setFormulario] = useState(formularioInicial);
+function combinarFormulario(guardado) {
+  return {
+    ...formularioInicial,
+    ...guardado,
+    nombreApellidos: guardado.nombreApellidos || guardado.nombreCompleto || "",
+    email: guardado.email || guardado.correo || "",
+    funciones: guardado.funciones || formularioInicial.funciones,
+    denominaciones: guardado.denominaciones || formularioInicial.denominaciones,
+    ocupacionesRelacionadas: guardado.ocupacionesRelacionadas || formularioInicial.ocupacionesRelacionadas,
+    habilidades: guardado.habilidades || [],
+    conocimientos: guardado.conocimientos || [],
+  };
+}
+
+function SolicitudOcupacion() {
+  const [borradorInicial] = useState(obtenerBorrador);
+  const [mostrarFormulario, setMostrarFormulario] = useState(() => Boolean(borradorInicial?.formulario));
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+  const [formulario, setFormulario] = useState(() => borradorInicial?.formulario ? combinarFormulario(borradorInicial.formulario) : formularioInicial);
+  const [currentStep, setCurrentStep] = useState(() => Math.min(Math.max(Number(borradorInicial?.currentStep) || 1, 1), ultimaSesion));
+  const [completedSteps, setCompletedSteps] = useState(() => borradorInicial?.completedSteps || Array.from({ length: Math.max((Number(borradorInicial?.currentStep) || 1) - 1, 0) }, (_, indice) => indice + 1));
+  const [error, setError] = useState("");
+  const [guardado, setGuardado] = useState(Boolean(borradorInicial?.formulario));
 
   useEffect(() => {
-    if (!mostrarConfirmacion) {
-      return undefined;
-    }
+    if (!mostrarFormulario || mostrarConfirmacion) return undefined;
+    guardarBorrador(formulario, currentStep, completedSteps);
+    return undefined;
+  }, [formulario, currentStep, completedSteps, mostrarFormulario, mostrarConfirmacion]);
 
-    const temporizador = setTimeout(() => {
-      setMostrarConfirmacion(false);
-    }, 20000);
-
-    return () => clearTimeout(temporizador);
-  }, [mostrarConfirmacion]);
-
-  const manejarCambio = (e) => {
-    const { name, value } = e.target;
-
-    setFormulario({
-      ...formulario,
-      [name]: value,
-      ...(name === "departamento" ? { municipio: "" } : {}),
-    });
-  };
-
-  const manejarEnvio = (e) => {
-    e.preventDefault();
-
-    console.log("Datos del formulario:", formulario);
-    setFormulario({ ...formularioInicial, fecha: new Date().toISOString().slice(0, 10) });
-    setMostrarConfirmacion(true);
+  const manejarCambio = (evento) => {
+    const { name, value } = evento.target;
+    setFormulario((actual) => ({ ...actual, [name]: value, ...(name === "departamento" ? { municipio: "" } : {}) }));
+    setGuardado(false);
+    setError("");
   };
 
   const manejarLista = (nombre, indice, valor) => {
-    setFormulario({ ...formulario, [nombre]: formulario[nombre].map((item, itemIndice) => itemIndice === indice ? valor : item) });
+    setFormulario((actual) => ({ ...actual, [nombre]: actual[nombre].map((item, itemIndice) => itemIndice === indice ? valor : item) }));
+    setGuardado(false);
+    setError("");
   };
 
-  const agregarElemento = (nombre) => setFormulario({ ...formulario, [nombre]: [...formulario[nombre], ""] });
-  const quitarElemento = (nombre, indice) => setFormulario({ ...formulario, [nombre]: formulario[nombre].filter((_, itemIndice) => itemIndice !== indice) });
-  const alternarCatalogo = (nombre, valor) => setFormulario({ ...formulario, [nombre]: formulario[nombre].includes(valor) ? formulario[nombre].filter((item) => item !== valor) : [...formulario[nombre], valor] });
+  const agregarElemento = (nombre) => {
+    setFormulario((actual) => ({ ...actual, [nombre]: [...actual[nombre], ""] }));
+    setGuardado(false);
+  };
 
-  const campo = (id, etiqueta, tipo = "text", placeholder = "", requerido = false) => (
-    <div className="campo" key={id}>
-      <label htmlFor={id}>
-        {etiqueta} {requerido && <span aria-hidden="true" className="obligatorio">*</span>}
-      </label>
-      <input id={id} name={id} type={tipo} value={formulario[id]} onChange={manejarCambio} placeholder={placeholder} required={requerido} />
-    </div>
-  );
+  const quitarElemento = (nombre, indice) => {
+    setFormulario((actual) => ({ ...actual, [nombre]: actual[nombre].filter((_, itemIndice) => itemIndice !== indice) }));
+    setGuardado(false);
+  };
 
-  const campoSelect = (id, etiqueta, opciones, placeholder, requerido = false, deshabilitado = false) => (
-    <div className="campo" key={id}>
-      <label htmlFor={id}>
-        {etiqueta} {requerido && <span aria-hidden="true" className="obligatorio">*</span>}
-      </label>
-      <select id={id} name={id} value={formulario[id]} onChange={manejarCambio} required={requerido} disabled={deshabilitado}>
-        <option value="">{placeholder}</option>
-        {opciones.map((opcion) => <option value={opcion.value} key={opcion.value}>{opcion.label}</option>)}
-      </select>
-    </div>
-  );
+  const alternarCatalogo = (nombre, valor) => {
+    setFormulario((actual) => ({ ...actual, [nombre]: actual[nombre].includes(valor) ? actual[nombre].filter((item) => item !== valor) : [...actual[nombre], valor] }));
+    setGuardado(false);
+  };
 
   const listaEditable = (nombre, tipo, texto, placeholder) => (
     <div className="lista-editable">
       {formulario[nombre].map((valor, indice) => (
         <div className="elemento-editable" key={`${nombre}-${indice}`}>
-          <label className="sr-only" htmlFor={`${nombre}-${indice}`}>
-            {texto} {indice + 1}
-          </label>
-          {tipo === "textarea" ? <textarea id={`${nombre}-${indice}`} name={`${nombre}-${indice}`} value={valor} onChange={(e) => manejarLista(nombre, indice, e.target.value)} rows="3" placeholder={placeholder} /> : <input id={`${nombre}-${indice}`} name={`${nombre}-${indice}`} value={valor} onChange={(e) => manejarLista(nombre, indice, e.target.value)} placeholder={placeholder} />}
+          <label className="sr-only" htmlFor={`${nombre}-${indice}`}>{texto} {indice + 1}</label>
+          {tipo === "textarea" ? <textarea id={`${nombre}-${indice}`} name={`${nombre}-${indice}`} value={valor} onChange={(evento) => manejarLista(nombre, indice, evento.target.value)} rows="3" placeholder={placeholder} /> : <input id={`${nombre}-${indice}`} name={`${nombre}-${indice}`} value={valor} onChange={(evento) => manejarLista(nombre, indice, evento.target.value)} placeholder={placeholder} />}
           {formulario[nombre].length > 1 && <button type="button" className="boton-quitar" onClick={() => quitarElemento(nombre, indice)} aria-label={`Quitar ${texto.toLowerCase()} ${indice + 1}`}>×</button>}
         </div>
       ))}
@@ -97,125 +92,71 @@ function SolicitudOcupacion() {
     </div>
   );
 
+  const validarSesion = (evento) => {
+    if (!evento.currentTarget.checkValidity()) {
+      evento.currentTarget.reportValidity();
+      setError("Complete los campos obligatorios de esta sesión antes de continuar.");
+      return false;
+    }
+    return true;
+  };
+
+  const avanzar = (evento) => {
+    evento.preventDefault();
+    if (!validarSesion(evento)) return;
+    const sesionesCompletadas = completedSteps.includes(currentStep) ? completedSteps : [...completedSteps, currentStep].sort((a, b) => a - b);
+    guardarBorrador(formulario, currentStep, sesionesCompletadas);
+    setCompletedSteps(sesionesCompletadas);
+    setGuardado(true);
+    setError("");
+    setCurrentStep((actual) => Math.min(actual + 1, ultimaSesion));
+  };
+
+  const enviarSolicitud = (evento) => {
+    evento.preventDefault();
+    console.log("Solicitud de ocupación preparada:", formulario);
+    eliminarBorrador();
+    setMostrarConfirmacion(true);
+    setMostrarFormulario(false);
+  };
+
+  const renderizarSesion = () => {
+    if (currentStep === 1) return <DatosGenerales formulario={formulario} manejarCambio={manejarCambio} />;
+    if (currentStep === 2) return <PropuestaOcupacion formulario={formulario} manejarCambio={manejarCambio} />;
+    if (currentStep === 3) return <FuncionesPrincipales formulario={formulario} manejarLista={manejarLista} agregarElemento={agregarElemento} quitarElemento={quitarElemento} />;
+    if (currentStep === 4) return <DenominacionesOcupacionales listaEditable={listaEditable} />;
+    if (currentStep === 5) return <OcupacionesRelacionadas listaEditable={listaEditable} />;
+    if (currentStep === 6) return <Habilidades formulario={formulario} alternarCatalogo={alternarCatalogo} manejarCambio={manejarCambio} />;
+    if (currentStep === 7) return <Conocimientos formulario={formulario} alternarCatalogo={alternarCatalogo} manejarCambio={manejarCambio} />;
+    if (currentStep === 8) return <Justificacion formulario={formulario} manejarCambio={manejarCambio} />;
+    return <RevisionSolicitud formulario={formulario} />;
+  };
+
+  if (!mostrarFormulario) {
+    return <main className="pagina"><section className="inicio-card"><div className="inicio-contenido"><span className="etiqueta">SOLICITUD</span><h1>{mostrarConfirmacion ? "Solicitud enviada correctamente" : "Creación de nueva ocupación"}</h1><p>{mostrarConfirmacion ? "La información quedó preparada para que posteriormente el servicio institucional pueda enviarla o notificarla." : "Solicite la creación de una nueva ocupación diligenciando la información requerida."}</p>{!mostrarConfirmacion && <button type="button" className="boton boton-principal" onClick={() => { setMostrarConfirmacion(false); setMostrarFormulario(true); }}>Solicitar nueva ocupación</button>}</div></section></main>;
+  }
+
   return (
     <main className="pagina">
-      {!mostrarFormulario ? (
-        <section className="inicio-card">
-          <div className="inicio-contenido">
-            <span className="etiqueta">SOLICITUD</span>
+      <section className="formulario-card">
+        <header className="formulario-header">
+          <span className="etiqueta">PROPUESTA OCUPACIONAL</span>
+          <h1>Propuesta de nuevo perfil ocupacional</h1>
+          <p>Complete la solicitud por sesiones. Los datos se guardan automáticamente.</p>
+          <ProgresoFormulario currentStep={currentStep} completedSteps={completedSteps} onStepChange={(paso) => { setCurrentStep(paso); setError(""); }} />
+        </header>
 
-            <h1>Creación de nueva ocupación</h1>
-
-            <p>
-              Solicite la creación de una nueva ocupación diligenciando
-              la información requerida.
-            </p>
-
-            <button
-              type="button"
-              className="boton boton-principal"
-              onClick={() => {
-                setMostrarConfirmacion(false);
-                setMostrarFormulario(true);
-              }}
-            >
-              Solicitar nueva ocupación
-            </button>
+        <form onSubmit={currentStep === ultimaSesion ? enviarSolicitud : avanzar} aria-describedby="indicacion-obligatorios">
+          {currentStep === 1 && <p id="indicacion-obligatorios" className="referencia-formulario"><strong>Orientación:</strong> diligencie las casillas de propuesta con información clara y verificable. Los campos marcados con <span aria-hidden="true" className="obligatorio">*</span> son obligatorios.</p>}
+          {renderizarSesion()}
+          {error && <p className="error-formulario" role="alert">{error}</p>}
+          {currentStep < ultimaSesion && <p className="estado-guardado" role="status">{guardado ? "✓ Información guardada" : "✓ Información guardada automáticamente"}</p>}
+          <div className="acciones">
+            <button type="button" className="boton boton-secundario" onClick={() => currentStep === 1 ? setMostrarFormulario(false) : setCurrentStep((actual) => actual - 1)}>{currentStep === 1 ? "Cancelar" : "Anterior"}</button>
+            <button type="submit" className="boton boton-principal">{currentStep === ultimaSesion ? "Enviar solicitud" : currentStep === ultimaSesion - 1 ? "Revisar solicitud" : "Guardar y continuar"}</button>
           </div>
-        </section>
-      ) : (
-        <section className="formulario-card">
-          <header className="formulario-header">
-            <span className="etiqueta">PROPUESTA OCUPACIONAL</span>
-
-            <h1>Propuesta de nuevo perfil ocupacional</h1>
-
-            <p>
-              Complete los datos generales y construya la propuesta de la nueva ocupación.
-            </p>
-          </header>
-
-          <form onSubmit={manejarEnvio} aria-describedby="indicacion-obligatorios">
-            <fieldset className="formulario-seccion">
-              <legend className="seccion-header">1. Datos generales</legend>
-              <p>Información de la persona y entidad que presenta la propuesta.</p>
-
-              <div className="form-grid">
-                {campo("fecha", "Fecha", "date")}
-                {campo("nombreCompleto", "Nombre y apellidos", "text", "Ingrese nombre completo", true)}
-                {campo("documentoIdentidad", "Documento de identidad", "text", "Número de documento")}
-                {campo("correo", "Correo electrónico", "email", "correo@ejemplo.com", true)}
-                {campo("telefono", "Teléfono de contacto", "tel", "3001234567")}
-                {campo("empresaEntidad", "Empresa o entidad", "text", "Nombre de la entidad")}
-                <div className="campo">
-                  <label htmlFor="cargo"><span lang="es" translate="no">Cargo</span></label>
-                  <input id="cargo" name="cargo" type="text" value={formulario.cargo} onChange={manejarCambio} placeholder="Cargo actual" />
-                </div>
-                {campo("profesion", "Profesión", "text", "Profesión o formación")}
-                {campoSelect("departamento", "Departamento", DEPARTAMENTOS, "Seleccione departamento")}
-                {campoSelect("municipio", "Municipio", MUNICIPIOS_POR_DEPARTAMENTO[formulario.departamento] || [], formulario.departamento ? "Seleccione municipio" : "Seleccione primero un departamento", false, !formulario.departamento)}
-                {campoSelect("sector", "Sector", SECTORES, "Seleccione sector")}
-              </div>
-            </fieldset>
-
-            <p id="indicacion-obligatorios" className="referencia-formulario"><strong>Orientación:</strong> diligencie las casillas de propuesta con información clara y verificable. Los campos marcados con <span aria-hidden="true" className="obligatorio">*</span> son obligatorios.</p>
-
-            <fieldset className="formulario-seccion instrumento-seccion"><legend className="seccion-header">2. Propuesta de ocupación</legend><p>Defina el perfil y el propósito de la nueva ocupación.</p><div className="form-grid">{campo("nombreOcupacion", "Nombre de la ocupación", "text", "Ejemplo: Analista de datos", true)}{campoSelect("areaDesempeno", "Área de desempeño", AREAS_DESEMPENO, "Seleccione área", true)}{campoSelect("nivelCualificacion", "Nivel de cualificación", NIVELES_CUALIFICACION, "Seleccione nivel", true)}<div className="campo campo-completo"><label htmlFor="descripcion">Descripción de la ocupación <span aria-hidden="true" className="obligatorio">*</span></label><textarea id="descripcion" name="descripcion" value={formulario.descripcion} onChange={manejarCambio} rows="4" placeholder="Describa el propósito y alcance de la ocupación" required /></div></div></fieldset>
-            <fieldset className="formulario-seccion instrumento-seccion"><legend className="seccion-header">3. Funciones principales</legend><p>Describa las funciones más representativas del perfil.</p>{listaEditable("funciones", "textarea", "función", "Escriba una función principal")}</fieldset>
-            <fieldset className="formulario-seccion instrumento-seccion"><legend className="seccion-header">4. Denominaciones ocupacionales</legend><p>Agregue cargos o nombres equivalentes de esta ocupación.</p>{listaEditable("denominaciones", "input", "denominación", "Ejemplo: Coordinador de operaciones")}</fieldset>
-            <fieldset className="formulario-seccion instrumento-seccion"><legend className="seccion-header">5. Ocupaciones relacionadas</legend><p>Indique perfiles que tengan relación con la propuesta.</p>{listaEditable("ocupacionesRelacionadas", "input", "ocupación relacionada", "Nombre de ocupación relacionada")}</fieldset>
-            <fieldset className="formulario-seccion instrumento-seccion"><legend className="seccion-header">6. Habilidades</legend><p>Seleccione las habilidades más importantes para desempeñar las funciones.</p><div className="opciones-catalogo">{HABILIDADES_CATALOGO.map((habilidad) => <label className={`opcion-catalogo ${formulario.habilidades.includes(habilidad) ? "seleccionada" : ""}`} key={habilidad}><input type="checkbox" name="habilidades" value={habilidad} checked={formulario.habilidades.includes(habilidad)} onChange={() => alternarCatalogo("habilidades", habilidad)} />{habilidad}</label>)}</div><div className="campo campo-completo"><label htmlFor="otrasHabilidades">Otras habilidades</label><input id="otrasHabilidades" name="otrasHabilidades" value={formulario.otrasHabilidades} onChange={manejarCambio} placeholder="Sepárelas con un signo +" /></div></fieldset>
-            <fieldset className="formulario-seccion instrumento-seccion"><legend className="seccion-header">7. Conocimientos</legend><p>Seleccione los conocimientos necesarios para la ocupación.</p><div className="opciones-catalogo">{CONOCIMIENTOS_CATALOGO.map((conocimiento) => <label className={`opcion-catalogo ${formulario.conocimientos.includes(conocimiento) ? "seleccionada" : ""}`} key={conocimiento}><input type="checkbox" name="conocimientos" value={conocimiento} checked={formulario.conocimientos.includes(conocimiento)} onChange={() => alternarCatalogo("conocimientos", conocimiento)} />{conocimiento}</label>)}</div><div className="campo campo-completo"><label htmlFor="otrosConocimientos">Otros conocimientos</label><input id="otrosConocimientos" name="otrosConocimientos" value={formulario.otrosConocimientos} onChange={manejarCambio} placeholder="Sepárelos con un signo +" /></div></fieldset>
-            <fieldset className="formulario-seccion instrumento-seccion"><legend className="seccion-header">8. Justificación</legend><p>Explique la necesidad de crear esta ocupación.</p><div className="campo"><label htmlFor="justificacion">Justificación <span aria-hidden="true" className="obligatorio">*</span></label><textarea id="justificacion" name="justificacion" value={formulario.justificacion} onChange={manejarCambio} rows="5" placeholder="Explique las razones de la solicitud" required /></div></fieldset>
-
-            {/* INFORMACIÓN DE CONTACTO */}
-            <aside className="informacion" aria-labelledby="informacion-contacto">
-              <div className="informacion-icono">i</div>
-
-              <div>
-                <strong id="informacion-contacto">¿Necesita más información?</strong>
-
-                <p>
-                  Para más información sobre esta solicitud, puede
-                  escribir al correo{" "}
-                  <strong>correo@ejemplo.com</strong>.
-                </p>
-              </div>
-            </aside>
-
-            {/* BOTONES */}
-            <div className="acciones">
-              <button
-                type="button"
-                className="boton boton-secundario"
-                onClick={() => {
-                  setMostrarConfirmacion(false);
-                  setMostrarFormulario(false);
-                }}
-              >
-                Cancelar
-              </button>
-
-              <button
-                type="submit"
-                className="boton boton-principal"
-              >
-                Enviar solicitud
-              </button>
-            </div>
-
-            {mostrarConfirmacion && (
-              <div className="mensaje-exito" role="status">
-                <strong>Solicitud procesada correctamente.</strong>
-                <span>
-                  Los datos fueron capturados y están listos para su revisión.
-                  Para más información, comunicarse al correo xxxx.
-                </span>
-              </div>
-            )}
-          </form>
-        </section>
-      )}
+        </form>
+      </section>
     </main>
   );
 }
