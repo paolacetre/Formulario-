@@ -4,6 +4,7 @@ import {
   SECTORES,
 } from "../data/instrumento3.models";
 import EncabezadoPaso from "./EncabezadoPaso";
+import SelectorBuscable from "./SelectorBuscable";
 import Tarjeta from "./Tarjeta";
 
 function Campo({ id, etiqueta, tipo = "text", placeholder = "", valor, onChange, requerido = false }) {
@@ -17,21 +18,16 @@ function Campo({ id, etiqueta, tipo = "text", placeholder = "", valor, onChange,
   );
 }
 
-function CampoSelect({ id, etiqueta, opciones, placeholder, valor, onChange, requerido = false, deshabilitado = false }) {
-  return (
-    <div className="campo">
-      <label htmlFor={id}>
-        {etiqueta} {requerido && <span aria-hidden="true" className="obligatorio">*</span>}
-      </label>
-      <select id={id} name={id} value={valor} onChange={onChange} required={requerido} disabled={deshabilitado}>
-        <option value="">{placeholder}</option>
-        {opciones.map((opcion) => <option value={opcion.value} key={opcion.value}>{opcion.label}</option>)}
-      </select>
-    </div>
-  );
-}
+function DatosGenerales({ formulario, manejarCambio, actualizarCampo }) {
+  const municipios = MUNICIPIOS_POR_DEPARTAMENTO[formulario.departamento] || [];
 
-function DatosGenerales({ formulario, manejarCambio }) {
+  // Al cambiar de departamento, el municipio elegido deja de ser válido.
+  const cambiarDepartamento = (departamento) => {
+    if (departamento === formulario.departamento) return;
+    actualizarCampo("departamento", departamento);
+    actualizarCampo("municipio", "");
+  };
+
   return (
     <fieldset className="paso">
       <EncabezadoPaso numero={1} descripcion="Información de la persona y la entidad que presenta la propuesta." />
@@ -50,9 +46,15 @@ function DatosGenerales({ formulario, manejarCambio }) {
         </Tarjeta>
         <Tarjeta id="tarjeta-ubicacion" icono="location_on" titulo="Ubicación y sector" descripcion="Lugar desde donde se presenta la solicitud y sector al que pertenece.">
           <div className="form-grid">
-            <CampoSelect id="departamento" etiqueta="Departamento" opciones={DEPARTAMENTOS} placeholder="Seleccione departamento" valor={formulario.departamento} onChange={manejarCambio} />
-            <CampoSelect id="municipio" etiqueta="Municipio" opciones={MUNICIPIOS_POR_DEPARTAMENTO[formulario.departamento] || []} placeholder={formulario.departamento ? "Seleccione municipio" : "Seleccione primero un departamento"} valor={formulario.municipio} onChange={manejarCambio} deshabilitado={!formulario.departamento} />
-            <CampoSelect id="sector" etiqueta="Sector" opciones={SECTORES} placeholder="Seleccione sector" valor={formulario.sector} onChange={manejarCambio} />
+            <div className="campo">
+              <SelectorBuscable id="departamento" etiqueta="Departamento" icono="map" opciones={DEPARTAMENTOS} valor={formulario.departamento} onCambiar={cambiarDepartamento} placeholder="Seleccione departamento" />
+            </div>
+            <div className="campo">
+              <SelectorBuscable id="municipio" etiqueta="Municipio" icono="location_city" opciones={municipios} valor={formulario.municipio} onCambiar={(municipio) => actualizarCampo("municipio", municipio)} placeholder={formulario.departamento ? "Seleccione municipio" : "Seleccione primero un departamento"} deshabilitado={!formulario.departamento} />
+            </div>
+            <div className="campo">
+              <SelectorBuscable id="sector" etiqueta="Sector" icono="business" opciones={SECTORES} valor={formulario.sector} onCambiar={(sector) => actualizarCampo("sector", sector)} placeholder="Seleccione sector" />
+            </div>
           </div>
         </Tarjeta>
       </div>

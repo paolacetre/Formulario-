@@ -103,7 +103,7 @@ function SolicitudOcupacion() {
 
   const manejarCambio = (evento) => {
     const { name, value } = evento.target;
-    setFormulario((actual) => ({ ...actual, [name]: value, ...(name === "departamento" ? { municipio: "" } : {}) }));
+    setFormulario((actual) => ({ ...actual, [name]: value }));
     setGuardado(false);
     setError("");
   };
@@ -164,7 +164,7 @@ function SolicitudOcupacion() {
   };
 
   const renderizarSesion = () => {
-    if (currentStep === 1) return <DatosGenerales formulario={formulario} manejarCambio={manejarCambio} />;
+    if (currentStep === 1) return <DatosGenerales formulario={formulario} manejarCambio={manejarCambio} actualizarCampo={actualizarCampo} />;
     if (currentStep === 2) return <PropuestaOcupacion formulario={formulario} manejarCambio={manejarCambio} actualizarCampo={actualizarCampo} />;
     if (currentStep === 3) return <FuncionesDenominaciones formulario={formulario} actualizarCampo={actualizarCampo} />;
     if (currentStep === 4) return <Habilidades formulario={formulario} alternarCatalogo={alternarCatalogo} actualizarCampo={actualizarCampo} />;
