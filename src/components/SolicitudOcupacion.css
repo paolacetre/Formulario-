@@ -1,0 +1,403 @@
+/* Solicitud de creación de ocupación.
+   Sigue el sistema visual del proyecto Clasificación de Ocupaciones (Figma "Ecosistema visual nivel fábrica"):
+   solo Work Sans 400/600; títulos 26, subtítulos 20 y texto 16 (14 para ayudas); un solo radio de 16px
+   en botones, campos y tarjetas (999px en píldoras y botones de ícono); colores de marca y tres estados.
+   Todo va dentro de .solicitud para no cambiar las demás vistas. */
+
+.solicitud {
+  --s-texto: #001631;
+  --s-gris: #525252;
+  --s-gris-claro: #8f8f8f;
+  --s-borde: #d4d4d4;
+  --s-fondo: #f1f1f1;
+  --s-verde: #7db728;
+  --s-verde-hover: #6a9d20;
+  --s-verde-suave: rgba(125, 183, 40, 0.2);
+  --s-ok-fondo: #ebf6e6;
+  --s-ok: #349a00;
+  --s-error-fondo: #ffe9e9;
+  --s-error: #e81c1c;
+  --s-alerta-fondo: #fff9e6;
+  --s-alerta: #d97706;
+  --s-info-fondo: rgba(31, 172, 227, 0.14);
+  --s-info: #0b6a92;
+  --s-radio: 16px;
+  --s-sombra: 0 4px 18px rgba(39, 53, 72, 0.05);
+
+  min-height: 100svh;
+  padding: clamp(20px, 4vw, 40px) 20px 48px;
+  background: var(--s-fondo);
+  color: var(--s-texto);
+  font-family: "Work Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.solicitud :is(button, input, select, textarea) { font-family: inherit; }
+.solicitud .material-icons { font-size: 20px; line-height: 1; }
+.solicitud p { margin-top: 0; }
+
+/* ---------- Estructura ---------- */
+.solicitud-contenedor { display: flex; flex-direction: column; gap: 24px; width: min(100%, 1040px); margin: 0 auto; }
+.solicitud-formulario { display: flex; flex-direction: column; gap: 24px; }
+
+.solicitud-eyebrow { margin: 0 0 4px; color: var(--s-gris); font-size: 14px; letter-spacing: 1.4px; text-transform: uppercase; }
+.solicitud h1 { margin: 0 0 6px; color: var(--s-texto); font-size: 26px; font-weight: 600; letter-spacing: -0.4px; line-height: 1.2; }
+
+.solicitud-encabezado { padding: 24px 28px; border: 1px solid var(--s-borde); border-radius: var(--s-radio); background: #fff; box-shadow: var(--s-sombra); }
+.solicitud-encabezado-principal { display: flex; align-items: flex-start; gap: 16px; }
+.solicitud-encabezado-texto { margin: 0; color: var(--s-gris); line-height: 1.5; }
+
+.tarjeta-icono { display: grid; flex: 0 0 44px; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--s-ok-fondo); color: var(--s-verde-hover); }
+.solicitud .tarjeta-icono { font-size: 22px; }
+.tarjeta-icono-grande { flex-basis: 52px; width: 52px; height: 52px; }
+.solicitud .tarjeta-icono-grande { font-size: 26px; }
+
+/* ---------- Indicador de pasos ---------- */
+.progreso-formulario { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--s-borde); }
+.progreso-formulario ol { display: grid; grid-template-columns: repeat(var(--pasos, 7), minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
+.progreso-item { position: relative; min-width: 0; }
+.progreso-item:not(:first-child)::before { content: ""; position: absolute; top: 17px; right: calc(50% + 24px); width: calc(100% - 48px); height: 2px; border-radius: 2px; background: var(--s-borde); }
+.progreso-item.completada::before, .progreso-item.actual::before { background: var(--s-verde); }
+.progreso-item button { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; padding: 0 4px; border: 0; background: transparent; color: var(--s-gris); font-size: 14px; line-height: 1.3; text-align: center; }
+.progreso-item button:not(:disabled) { cursor: pointer; }
+.progreso-item button:disabled { cursor: default; }
+.progreso-item button:focus-visible { border-radius: var(--s-radio); outline: 3px solid var(--s-verde); outline-offset: 2px; }
+.progreso-numero { display: grid; place-items: center; width: 36px; height: 36px; border: 1.5px solid var(--s-borde); border-radius: 50%; background: #fff; color: var(--s-gris); font-weight: 600; transition: border-color 0.18s ease, transform 0.18s ease; }
+.progreso-item button:not(:disabled):hover .progreso-numero { border-color: var(--s-verde); transform: scale(1.06); }
+.progreso-item.completada .progreso-numero { border-color: var(--s-ok-fondo); background: var(--s-ok-fondo); color: var(--s-ok); }
+.progreso-item.actual .progreso-numero { border-color: var(--s-verde); background: var(--s-verde); color: #fff; box-shadow: 0 0 0 4px var(--s-verde-suave); }
+.progreso-item.completada button, .progreso-item.actual button { color: var(--s-texto); }
+.progreso-item.actual .progreso-etiqueta { font-weight: 600; }
+.progreso-resumen { display: none; flex-direction: column; gap: 10px; margin: 0; color: var(--s-gris); font-size: 14px; }
+.progreso-resumen strong { color: var(--s-texto); font-weight: 600; }
+.progreso-barra { height: 6px; overflow: hidden; border-radius: 999px; background: var(--s-fondo); }
+.progreso-barra span { display: block; height: 100%; border-radius: inherit; background: var(--s-verde); transition: width 0.3s ease; }
+
+/* ---------- Encabezado de cada paso ---------- */
+.solicitud .paso { min-inline-size: 0; margin: 0; padding: 0; border: 0; }
+.solicitud .paso > legend { float: left; width: 100%; padding: 0; }
+.solicitud .paso > legend + * { clear: both; }
+.solicitud .paso-encabezado { margin: 0 0 6px; font-size: inherit; line-height: 1.3; }
+.paso-numero { display: block; margin-bottom: 4px; color: var(--s-gris); font-size: 14px; font-weight: 400; letter-spacing: 1.4px; text-transform: uppercase; }
+.paso-titulo { display: block; color: var(--s-texto); font-size: 20px; font-weight: 600; }
+.paso-descripcion { max-width: 72ch; margin: 0 0 20px; color: var(--s-gris); line-height: 1.5; }
+
+/* ---------- Tarjetas ---------- */
+.solicitud .tarjetas { display: grid; gap: 20px; }
+.solicitud .tarjeta { min-width: 0; padding: 24px; border: 1px solid var(--s-borde); border-radius: var(--s-radio); background: #fff; box-shadow: var(--s-sombra); }
+.solicitud .tarjeta-encabezado { display: flex; align-items: flex-start; gap: 16px; margin: 0 0 20px; padding: 0; border: 0; }
+.tarjeta-encabezado-texto { flex: 1; min-width: 0; }
+.solicitud .tarjeta-encabezado h3 { margin: 0; color: var(--s-texto); font-size: 20px; font-weight: 600; line-height: 1.3; }
+.solicitud .tarjeta-encabezado p { margin: 4px 0 0; color: var(--s-gris); font-size: 16px; line-height: 1.5; }
+.solicitud .tarjeta-resumen { flex: 0 0 auto; padding: 4px 12px; border-radius: 999px; background: var(--s-ok-fondo); color: var(--s-ok); font-size: 13px; font-weight: 400; letter-spacing: 0.4px; white-space: nowrap; }
+
+/* ---------- Campos ---------- */
+.solicitud .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 20px; }
+.solicitud .campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.solicitud .campo-completo { grid-column: 1 / -1; }
+.solicitud label { display: block; margin: 0; color: var(--s-gris); font-size: 16px; font-weight: 400; letter-spacing: 0.2px; }
+.solicitud .obligatorio { margin-left: 2px; color: var(--s-error); }
+
+/* :where() deja estas reglas base con prioridad baja para que las de cada componente las ajusten. */
+.solicitud :where(input:not([type="checkbox"]):not([type="file"]), select, textarea) {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1.5px solid var(--s-borde);
+  border-radius: var(--s-radio);
+  outline: none;
+  background-color: #fff;
+  color: var(--s-texto);
+  font-size: 16px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+.solicitud textarea { min-height: 120px; padding: 12px 14px; line-height: 1.5; resize: vertical; }
+.solicitud select {
+  padding-right: 42px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23525252' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-position: right 14px center;
+  background-repeat: no-repeat;
+  background-size: 18px;
+  cursor: pointer;
+}
+.solicitud :is(input, textarea)::placeholder { color: var(--s-gris-claro); }
+.solicitud :where(input:not([type="checkbox"]):not([type="file"]), select, textarea):hover { border-color: var(--s-gris-claro); }
+.solicitud :where(input:not([type="checkbox"]):not([type="file"]), select, textarea):focus { border-color: var(--s-verde); box-shadow: 0 0 0 3px var(--s-verde-suave); }
+.solicitud :is(input, select, textarea):disabled { border-color: var(--s-borde); background-color: var(--s-fondo); color: var(--s-gris-claro); cursor: not-allowed; }
+.solicitud input[type="checkbox"] { width: 18px; height: 18px; margin: 0; accent-color: var(--s-verde); cursor: pointer; }
+
+.solicitud .clasificacion-campos { display: grid; gap: 22px; }
+.solicitud .descripcion-seleccion { margin-top: 10px; padding: 14px 16px; border: 0; border-radius: var(--s-radio); background: var(--s-info-fondo); color: var(--s-info); font-size: 14px; line-height: 1.55; }
+.solicitud .descripcion-seleccion strong { display: block; margin-bottom: 4px; font-weight: 600; }
+.solicitud .descripcion-seleccion p { margin: 0; color: var(--s-texto); }
+.nota-campo { margin: 10px 0 0; color: var(--s-gris-claro); font-size: 14px; line-height: 1.4; }
+
+/* ---------- Avisos ---------- */
+.solicitud .aviso { display: flex; align-items: flex-start; gap: 12px; margin: 0; padding: 14px 18px; border: 1px solid transparent; border-radius: var(--s-radio); line-height: 1.5; }
+.solicitud .aviso > .material-icons { flex: 0 0 auto; margin-top: 1px; font-size: 22px; }
+.solicitud .aviso p { margin: 0; }
+.solicitud .aviso strong { font-weight: 600; }
+.solicitud .aviso ul { margin: 6px 0 0; padding-left: 18px; }
+.solicitud .aviso-info { border-color: rgba(31, 172, 227, 0.3); background: var(--s-info-fondo); color: var(--s-texto); }
+.solicitud .aviso-info > .material-icons { color: var(--s-info); }
+.solicitud .aviso-error { border-color: rgba(232, 28, 28, 0.25); background: var(--s-error-fondo); color: var(--s-error); }
+
+/* ---------- Botones ---------- */
+.solicitud .boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 0;
+  padding: 10px 20px;
+  border: 1.5px solid transparent;
+  border-radius: var(--s-radio);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+.solicitud .boton:focus-visible { outline: 3px solid var(--s-verde); outline-offset: 2px; }
+.solicitud .boton:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+.solicitud .boton-principal { background: var(--s-verde); color: #fff; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.12); }
+.solicitud .boton-principal:hover:not(:disabled) { background: var(--s-verde-hover); transform: translateY(-1px); }
+.solicitud .boton-secundario { border-color: transparent; background: var(--s-fondo); color: var(--s-texto); }
+.solicitud .boton-secundario:hover:not(:disabled) { background: var(--s-borde); }
+
+.boton-icono { display: inline-grid; flex: 0 0 36px; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--s-gris); cursor: pointer; transition: background-color 0.18s ease, color 0.18s ease; }
+.boton-icono:hover { background: #fff; color: var(--s-texto); }
+.boton-icono-quitar:hover { background: var(--s-error-fondo); color: var(--s-error); }
+.boton-icono:focus-visible { outline: 3px solid var(--s-verde); outline-offset: 2px; }
+
+/* Botón de contorno: crear o agregar otro elemento. */
+.boton-crear-manual { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 14px; padding: 0 18px; border: 1.5px solid var(--s-verde); border-radius: var(--s-radio); background: #fff; color: var(--s-verde-hover); font-size: 16px; cursor: pointer; transition: background-color 0.18s ease; }
+.boton-crear-manual:hover { background: var(--s-ok-fondo); }
+.boton-crear-manual:focus-visible { outline: 3px solid var(--s-verde); outline-offset: 2px; }
+
+/* ---------- Barra de acciones (fija al final de la ventana) ---------- */
+.solicitud-acciones {
+  position: sticky;
+  z-index: 10;
+  bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  padding: 14px 18px;
+  border: 1px solid var(--s-borde);
+  border-radius: var(--s-radio);
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(0, 22, 49, 0.12);
+}
+.solicitud .estado-guardado { display: flex; align-items: center; gap: 6px; width: auto; margin: 0; padding: 0; background: transparent; color: var(--s-gris); font-size: 14px; font-weight: 400; }
+.estado-guardado .material-icons { color: var(--s-ok); }
+.solicitud-acciones-botones { display: flex; gap: 10px; margin-left: auto; }
+
+/* ---------- Lista desplegable con buscador ---------- */
+.solicitud .selector-buscable { position: relative; min-width: 0; }
+.solicitud .filtro-etiqueta { display: flex; align-items: center; gap: 6px; margin: 0 0 6px; color: var(--s-gris); font-size: 16px; font-weight: 400; }
+.solicitud .filtro-etiqueta .material-icons { color: var(--s-gris); font-size: 18px; }
+.solicitud .selector-buscable-boton { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 44px; padding: 0 12px 0 14px; border: 1.5px solid var(--s-borde); border-radius: var(--s-radio); background: #fff; color: var(--s-texto); font-size: 16px; text-align: left; cursor: pointer; transition: border-color 0.18s ease, box-shadow 0.18s ease; }
+.selector-buscable-boton > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.solicitud .selector-buscable-boton .material-icons { color: var(--s-gris); font-size: 22px; }
+.solicitud .selector-buscable-boton:hover:not(:disabled) { border-color: var(--s-gris-claro); }
+.solicitud .selector-buscable-boton:focus-visible, .solicitud .selector-buscable-boton[aria-expanded="true"] { border-color: var(--s-verde); outline: none; box-shadow: 0 0 0 3px var(--s-verde-suave); }
+.solicitud .selector-buscable-boton:disabled { background: var(--s-fondo); color: var(--s-gris-claro); cursor: not-allowed; }
+.solicitud .selector-buscable-boton.invalido { border-color: var(--s-error); box-shadow: 0 0 0 3px rgba(232, 28, 28, 0.12); }
+.solicitud .selector-buscable-vacio { color: var(--s-gris-claro); }
+.solicitud .selector-buscable-error { margin: 6px 0 0; color: var(--s-error); font-size: 14px; font-weight: 400; }
+.solicitud .selector-buscable-validacion { position: absolute; bottom: 0; left: 0; width: 100%; height: 1px; min-height: 0; padding: 0; border: 0; opacity: 0; pointer-events: none; }
+.solicitud .selector-buscable-panel { position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; width: max(100%, 300px); max-width: calc(100vw - 32px); padding: 10px; border: 1px solid var(--s-borde); border-radius: var(--s-radio); background: #fff; box-shadow: 0 16px 40px rgba(0, 22, 49, 0.16); }
+.solicitud .selector-buscable-panel input { border-color: var(--s-verde); box-shadow: 0 0 0 3px var(--s-verde-suave); }
+.solicitud .selector-buscable-panel ul { max-height: 340px; margin: 8px 0 0; padding: 0; overflow-y: auto; list-style: none; }
+.solicitud .selector-buscable-panel li { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 0; border-radius: var(--s-radio); color: var(--s-texto); line-height: 1.4; cursor: pointer; }
+.solicitud .selector-buscable-panel li + li { margin-top: 2px; }
+.solicitud .selector-buscable-panel li small { display: -webkit-box; overflow: hidden; color: var(--s-gris); font-size: 14px; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.solicitud .selector-buscable-panel li.activa { background: var(--s-fondo); }
+.solicitud .selector-buscable-panel li.elegida { background: var(--s-ok-fondo); }
+.solicitud .selector-buscable-panel li.elegida .selector-buscable-opcion-titulo { font-weight: 600; }
+.solicitud .selector-buscable-panel li.todas { font-weight: 600; }
+.solicitud .selector-buscable-panel li.bloqueada { cursor: default; opacity: 0.55; }
+.solicitud .selector-buscable-panel .selector-buscable-sin-resultados { color: var(--s-gris); cursor: default; }
+.solicitud .selector-buscable-opcion-titulo { font-weight: 400; }
+.solicitud .selector-buscable-pie { margin: 8px 4px 0; color: var(--s-gris-claro); font-size: 14px; }
+
+/* ---------- Catálogos de la CNO: opciones, elementos agregados y creación manual ---------- */
+.solicitud .codigo-cno { display: inline-flex; flex: 0 0 auto; align-self: flex-start; padding: 2px 10px; border-radius: 999px; background: var(--s-info-fondo); color: var(--s-info); font-size: 13px; font-weight: 400; letter-spacing: 0.4px; white-space: nowrap; }
+.solicitud .codigo-manual { background: var(--s-alerta-fondo); color: var(--s-alerta); }
+.solicitud .opcion-catalogo-cabecera { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.solicitud .insignia-agregada { padding: 2px 10px; border-radius: 999px; background: var(--s-ok-fondo); color: var(--s-ok); font-size: 13px; font-weight: 400; }
+.solicitud .lista-catalogo > .aviso, .solicitud .elementos-manuales > .aviso { margin-top: 12px; }
+
+.solicitud .lista-catalogo-agregados { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--s-borde); }
+.solicitud .lista-catalogo-subtitulo { margin: 0 0 12px; color: var(--s-texto); font-size: 16px; font-weight: 600; }
+
+.estado-vacio { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 28px 20px; border-radius: var(--s-radio); background: var(--s-fondo); color: var(--s-gris); text-align: center; }
+.estado-vacio strong { color: var(--s-texto); font-weight: 600; }
+.estado-vacio p { margin: 0; font-size: 14px; }
+.solicitud .estado-vacio-icono { display: grid; place-items: center; width: 56px; height: 56px; margin-bottom: 6px; border-radius: 50%; background: #fff; color: var(--s-gris-claro); font-size: 26px; }
+
+.solicitud .tarjetas-elementos { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); align-items: start; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.solicitud .elementos-manuales .tarjetas-elementos { margin-top: 14px; }
+.solicitud .tarjeta-elemento { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 14px 14px 16px 16px; border: 0; border-radius: var(--s-radio); background: var(--s-fondo); box-shadow: none; }
+.solicitud .tarjeta-elemento-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.solicitud .tarjeta-elemento p { margin: 0; overflow-wrap: anywhere; }
+.solicitud .tarjeta-elemento-nombre { color: var(--s-texto); font-weight: 600; line-height: 1.4; }
+/* Las funciones son frases largas: en negrita se leen pesadas. */
+.solicitud .tarjeta-elemento-nombre.largo { font-weight: 400; line-height: 1.5; }
+.solicitud .tarjeta-elemento-descripcion { color: var(--s-gris); font-size: 14px; line-height: 1.5; }
+.solicitud .tarjeta-elemento-ocupacion { display: flex; align-items: flex-start; gap: 6px; padding: 0; background: transparent; color: var(--s-gris); font-size: 14px; line-height: 1.4; }
+.solicitud .tarjeta-elemento-ocupacion .material-icons { margin-top: 1px; font-size: 16px; }
+
+.solicitud .formulario-manual { margin-top: 14px; padding: 20px; border: 0; border-radius: var(--s-radio); background: var(--s-fondo); }
+.solicitud .formulario-manual .formulario-manual-titulo { margin: 0 0 14px; color: var(--s-texto); font-weight: 600; }
+.solicitud .formulario-manual .campo + .campo { margin-top: 14px; }
+.solicitud .formulario-manual textarea { min-height: 96px; }
+.solicitud .formulario-manual .boton-secundario { border-color: var(--s-borde); background: #fff; }
+.solicitud .formulario-manual-error { margin: 10px 0 0; color: var(--s-error); font-size: 14px; font-weight: 400; }
+.solicitud .formulario-manual-acciones { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+.solicitud .elementos-manuales { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--s-borde); }
+.solicitud .elementos-manuales .boton-crear-manual { margin-top: 0; }
+
+/* ---------- Tablas de habilidades y conocimientos ---------- */
+.solicitud .tabla-catalogo-herramientas { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 16px; margin-bottom: 14px; }
+.solicitud .filtro-busqueda { flex: 1 1 320px; min-width: 0; max-width: 520px; }
+.solicitud .campo-con-icono { position: relative; }
+.solicitud .campo-con-icono > .material-icons { position: absolute; top: 50%; left: 14px; color: var(--s-gris); pointer-events: none; transform: translateY(-50%); }
+.solicitud .campo-con-icono input { padding-left: 44px; border-color: transparent; background-color: var(--s-fondo); }
+.solicitud .campo-con-icono input:focus { background-color: #fff; }
+.solicitud .tabla-catalogo-contador { margin: 0; padding: 6px 14px; border-radius: 999px; background: var(--s-ok-fondo); color: var(--s-ok); font-size: 14px; }
+.solicitud .tabla-catalogo-contador strong { font-weight: 600; }
+.solicitud .tabla-catalogo-wrapper { max-height: 520px; overflow: auto; border: 1px solid var(--s-borde); border-radius: var(--s-radio); }
+.solicitud .tabla-catalogo { width: 100%; border-collapse: separate; border-spacing: 0; color: var(--s-texto); font-size: 16px; }
+.solicitud .tabla-catalogo th, .solicitud .tabla-catalogo td { padding: 14px 16px; border: 0; line-height: 1.5; text-align: left; vertical-align: top; }
+.solicitud .tabla-catalogo thead th { position: sticky; z-index: 1; top: 0; background: var(--s-fondo); color: var(--s-gris); font-size: 13px; font-weight: 400; letter-spacing: 1.2px; text-transform: uppercase; white-space: nowrap; }
+.solicitud .tabla-catalogo tbody :is(th, td) { border-top: 1px solid var(--s-borde); }
+.solicitud .tabla-catalogo tbody th { width: 28%; font-weight: 600; }
+.solicitud .tabla-catalogo tbody th label { color: inherit; font-weight: inherit; cursor: pointer; }
+.solicitud .tabla-catalogo tbody td:last-child { color: var(--s-gris); font-size: 14px; }
+.solicitud .tabla-catalogo .tabla-catalogo-check { width: 52px; padding-right: 0; }
+.solicitud .tabla-catalogo-check input { margin-top: 3px; }
+.solicitud .tabla-catalogo .tabla-catalogo-codigo { width: 96px; }
+.solicitud .tabla-catalogo tbody tr { transition: background-color 0.18s ease; }
+.solicitud .tabla-catalogo tbody tr:hover { background: rgba(241, 241, 241, 0.6); }
+.solicitud .tabla-catalogo tbody tr.seleccionada { background: var(--s-ok-fondo); }
+.solicitud .tabla-catalogo-vacia { padding: 24px 16px; color: var(--s-gris); text-align: center; }
+
+/* ---------- Documentos adjuntos ---------- */
+.zona-carga { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 28px 20px; border: 1.5px dashed var(--s-borde); border-radius: var(--s-radio); background: var(--s-fondo); text-align: center; cursor: pointer; transition: border-color 0.18s ease, background-color 0.18s ease; }
+.zona-carga:hover, .zona-carga:focus-within { border-color: var(--s-verde); background: var(--s-ok-fondo); }
+.zona-carga:has(input:focus-visible) { outline: 3px solid var(--s-verde); outline-offset: 2px; }
+.solicitud .zona-carga-icono { display: grid; place-items: center; width: 52px; height: 52px; margin-bottom: 4px; border-radius: 50%; background: #fff; color: var(--s-verde-hover); font-size: 26px; }
+.zona-carga-titulo { color: var(--s-texto); font-weight: 600; }
+.zona-carga small { color: var(--s-gris); font-size: 14px; }
+.solicitud .zona-carga input { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
+.solicitud .adjuntos-justificacion > .aviso { margin-top: 14px; }
+
+.solicitud .lista-adjuntos { display: grid; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+.solicitud .lista-adjuntos li { display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 16px; border: 0; border-radius: var(--s-radio); background: var(--s-fondo); }
+.solicitud .lista-adjuntos-icono { flex: 0 0 auto; color: var(--s-verde-hover); font-size: 22px; }
+.solicitud .lista-adjuntos-archivo { display: flex; flex: 1; flex-direction: column; gap: 2px; min-width: 0; color: var(--s-texto); line-height: 1.4; overflow-wrap: anywhere; text-align: left; }
+.solicitud .lista-adjuntos small { color: var(--s-gris); font-size: 14px; }
+.solicitud .boton-ver-adjunto { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border: 1.5px solid var(--s-verde); border-radius: var(--s-radio); background: #fff; color: var(--s-verde-hover); font-size: 14px; font-weight: 400; cursor: pointer; }
+.solicitud .boton-ver-adjunto .material-icons { font-size: 18px; }
+.solicitud .boton-ver-adjunto:hover { background: var(--s-ok-fondo); }
+.solicitud .boton-ver-adjunto:focus-visible { outline: 3px solid var(--s-verde); outline-offset: 2px; }
+
+/* ---------- Revisión ---------- */
+.solicitud .revision-grupo { margin: 0; }
+.revision-grupo-encabezado { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--s-borde); }
+.solicitud .revision-grupo-encabezado h3 { margin: 0; color: var(--s-texto); font-size: 20px; font-weight: 600; }
+.boton-editar { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border: 0; border-radius: var(--s-radio); background: transparent; color: var(--s-verde-hover); font-size: 16px; cursor: pointer; }
+.solicitud .boton-editar .material-icons { font-size: 18px; }
+.boton-editar:hover { background: var(--s-ok-fondo); }
+.boton-editar:focus-visible { outline: 3px solid var(--s-verde); outline-offset: 2px; }
+.solicitud .revision-grupo dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; margin: 0; }
+.solicitud .revision-grupo dl > div { min-width: 0; }
+.solicitud .revision-grupo .revision-campo-completo { grid-column: 1 / -1; }
+.solicitud .revision-grupo dt { margin-bottom: 4px; color: var(--s-gris); font-size: 14px; font-weight: 400; }
+.solicitud .revision-grupo dd { margin: 0; color: var(--s-texto); line-height: 1.5; overflow-wrap: anywhere; white-space: pre-wrap; }
+.solicitud .revision-vacio { margin: 0; color: var(--s-gris-claro); font-style: normal; }
+.solicitud .revision-lista { display: grid; gap: 6px; margin: 0; padding-left: 20px; }
+.solicitud .revision-grupo .lista-adjuntos { margin-top: 0; }
+
+/* ---------- Pantalla de inicio ---------- */
+.solicitud-inicio { display: flex; flex-direction: column; align-items: center; width: min(100%, 760px); margin: 0 auto; padding: 40px 40px 36px; border: 1px solid var(--s-borde); border-radius: var(--s-radio); background: #fff; box-shadow: var(--s-sombra); text-align: center; }
+.solicitud-inicio > .tarjeta-icono { margin-bottom: 16px; }
+.solicitud-inicio-texto { max-width: 560px; margin: 0 0 24px; color: var(--s-gris); line-height: 1.6; }
+.solicitud-inicio-pasos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; width: 100%; max-width: 600px; margin: 0 0 28px; padding: 0; list-style: none; text-align: left; }
+.solicitud-inicio-pasos li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--s-radio); background: var(--s-fondo); color: var(--s-texto); font-size: 14px; line-height: 1.35; }
+.paso-circulo { display: grid; flex: 0 0 28px; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--s-ok-fondo); color: var(--s-verde-hover); font-size: 14px; font-weight: 600; }
+
+/* ---------- Confirmación ---------- */
+.solicitud .confirmacion-card { width: min(100%, 1040px); margin: 0 auto; padding: 40px 48px 36px; border: 1px solid var(--s-borde); border-radius: var(--s-radio); background: #fff; box-shadow: var(--s-sombra); text-align: center; }
+.solicitud .confirmacion-icono { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 50%; background: var(--s-ok-fondo); color: var(--s-ok); font-size: 34px; }
+.solicitud .confirmacion-etiqueta { display: block; margin: 0 0 10px; color: var(--s-ok); font-size: 14px; font-weight: 600; letter-spacing: 1.4px; line-height: 1.3; }
+.solicitud .confirmacion-texto { max-width: 640px; margin: 0 auto 28px; color: var(--s-gris); font-size: 16px; line-height: 1.6; }
+.solicitud .confirmacion-radicado { display: inline-flex; flex-direction: column; align-items: center; gap: 6px; min-width: min(100%, 440px); margin-bottom: 32px; padding: 22px 32px; border: 1.5px dashed rgba(31, 172, 227, 0.5); border-radius: var(--s-radio); background: var(--s-info-fondo); }
+.solicitud .confirmacion-radicado span { color: var(--s-info); font-size: 13px; font-weight: 400; letter-spacing: 1.4px; }
+.solicitud .confirmacion-radicado strong { color: var(--s-texto); font-family: inherit; font-size: 32px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0.08em; line-height: 1.2; }
+.solicitud .confirmacion-radicado small { color: var(--s-gris); font-size: 14px; }
+.solicitud .confirmacion-resumen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 32px; margin: 0 0 28px; padding: 24px 28px; border: 0; border-radius: var(--s-radio); background: var(--s-fondo); text-align: left; }
+.solicitud .confirmacion-resumen > div { min-width: 0; }
+.solicitud .confirmacion-resumen dt { margin-bottom: 4px; color: var(--s-texto); font-weight: 600; }
+.solicitud .confirmacion-resumen dd { margin: 0; color: var(--s-gris); line-height: 1.5; overflow-wrap: anywhere; }
+.solicitud .confirmacion-adjuntos { grid-column: 1 / -1; }
+.solicitud .confirmacion-adjuntos .lista-adjuntos { margin-top: 6px; }
+.solicitud .confirmacion-adjuntos .lista-adjuntos li { background: #fff; }
+.solicitud .confirmacion-card > .aviso { margin-bottom: 20px; text-align: left; }
+.solicitud .confirmacion-acciones { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.solicitud .confirmacion-volver { color: var(--s-verde-hover); font-weight: 400; text-decoration: underline; text-underline-offset: 3px; }
+.solicitud .confirmacion-volver:hover { color: var(--s-texto); }
+
+/* ---------- Pantallas angostas ---------- */
+@media (max-width: 760px) {
+  .solicitud { padding: 16px 12px 32px; }
+  .solicitud-encabezado { padding: 20px 18px; }
+  .solicitud-encabezado-principal { gap: 12px; }
+  .solicitud .tarjeta-icono-grande { flex-basis: 44px; width: 44px; height: 44px; font-size: 22px; }
+  .progreso-formulario ol { display: none; }
+  .progreso-resumen { display: flex; }
+  .progreso-formulario { margin-top: 18px; padding-top: 16px; }
+
+  .solicitud .tarjeta { padding: 18px 16px 20px; }
+  .solicitud .tarjeta-encabezado { flex-wrap: wrap; gap: 12px; }
+  .solicitud .tarjeta-resumen { order: 3; }
+  .solicitud .form-grid, .solicitud .revision-grupo dl, .solicitud .confirmacion-resumen { grid-template-columns: 1fr; }
+  .solicitud .campo-completo, .solicitud .revision-grupo .revision-campo-completo, .solicitud .confirmacion-adjuntos { grid-column: auto; }
+
+  .solicitud-acciones { bottom: 8px; padding: 12px; }
+  .solicitud .estado-guardado { width: 100%; justify-content: center; }
+  .solicitud-acciones-botones { width: 100%; margin-left: 0; }
+  .solicitud-acciones-botones .boton { flex: 1; padding: 10px 12px; }
+
+  .solicitud .formulario-manual-acciones { flex-direction: column-reverse; }
+  .solicitud .formulario-manual-acciones .boton, .solicitud .boton-crear-manual { justify-content: center; width: 100%; }
+  .solicitud .lista-adjuntos li { flex-wrap: wrap; }
+
+  .solicitud .tabla-catalogo thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+  .solicitud .tabla-catalogo tbody tr { display: grid; grid-template-columns: 40px minmax(0, 1fr); border-top: 1px solid var(--s-borde); }
+  .solicitud .tabla-catalogo tbody tr:first-child { border-top: 0; }
+  .solicitud .tabla-catalogo tbody tr > * { border-top: 0; }
+  .solicitud .tabla-catalogo .tabla-catalogo-check { grid-row: span 3; width: auto; padding: 14px 0 14px 14px; }
+  .solicitud .tabla-catalogo .tabla-catalogo-codigo { width: auto; padding: 14px 14px 0 0; }
+  .solicitud .tabla-catalogo tbody th { width: auto; padding: 6px 14px 4px 0; }
+  .solicitud .tabla-catalogo tbody td:last-child { padding: 0 14px 14px 0; }
+  .solicitud .tabla-catalogo .tabla-catalogo-vacia { grid-column: 1 / -1; }
+
+  .solicitud-inicio { padding: 28px 18px; }
+  .solicitud-inicio-pasos { grid-template-columns: 1fr; }
+  .solicitud-inicio .boton { width: 100%; }
+  .solicitud .confirmacion-card { padding: 28px 18px; }
+  .solicitud .confirmacion-radicado { width: 100%; min-width: 0; padding: 20px 16px; }
+  .solicitud .confirmacion-radicado strong { font-size: 26px; }
+  .solicitud .confirmacion-resumen { padding: 20px 16px; }
+}
