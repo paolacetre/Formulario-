@@ -1,18 +1,6 @@
-import {
-  AREAS_DESEMPENO,
-  DEPARTAMENTOS,
-  MUNICIPIOS_POR_DEPARTAMENTO,
-  NIVELES_CUALIFICACION,
-  SECTORES,
-} from "../data/instrumento3.models";
-
-function obtenerEtiqueta(opciones, valor) {
-  return opciones.find((opcion) => opcion.value === valor)?.label || valor;
-}
-
-function obtenerMunicipio(departamento, municipio) {
-  return obtenerEtiqueta(MUNICIPIOS_POR_DEPARTAMENTO[departamento] || [], municipio);
-}
+import { obtenerSeccionesSolicitud } from "../services/fichaSolicitud";
+import EncabezadoPaso from "./EncabezadoPaso";
+import ListaAdjuntos from "./ListaAdjuntos";
 
 function ValorRevision({ valor, lista = false }) {
   if (lista) {
@@ -24,58 +12,49 @@ function ValorRevision({ valor, lista = false }) {
   return valor ? <span>{valor}</span> : <span className="revision-vacio">Sin información</span>;
 }
 
-function RevisionSolicitud({ formulario }) {
-  const grupos = [
-    ["Datos generales", [
-      ["Fecha", formulario.fecha],
-      ["Nombre y apellidos", formulario.nombreApellidos],
-      ["Documento de identidad", formulario.documentoIdentidad],
-      ["Correo electrónico", formulario.email],
-      ["Teléfono de contacto", formulario.telefono],
-      ["Empresa o entidad", formulario.empresaEntidad],
-      ["Cargo", formulario.cargo],
-      ["Profesión", formulario.profesion],
-      ["Departamento", obtenerEtiqueta(DEPARTAMENTOS, formulario.departamento)],
-      ["Municipio", obtenerMunicipio(formulario.departamento, formulario.municipio)],
-      ["Sector", obtenerEtiqueta(SECTORES, formulario.sector)],
-    ]],
-    ["Propuesta de ocupación", [
-      ["Nombre de la ocupación", formulario.nombreOcupacion],
-      ["Área de desempeño", obtenerEtiqueta(AREAS_DESEMPENO, formulario.areaDesempeno)],
-      ["Nivel de cualificación", obtenerEtiqueta(NIVELES_CUALIFICACION, formulario.nivelCualificacion)],
-      ["Descripción de la ocupación", formulario.descripcion, false, true],
-    ]],
-    ["3. Funciones principales", [["Funciones principales", formulario.funciones, true, true]]],
-    ["4. Denominaciones ocupacionales", [["Denominaciones ocupacionales", formulario.denominaciones, true, true]]],
-    ["5. Ocupaciones relacionadas", [["Ocupaciones relacionadas", formulario.ocupacionesRelacionadas, true, true]]],
-    ["6. Habilidades", [
-      ["Habilidades seleccionadas", formulario.habilidades, true, true],
-      ["Otras habilidades", formulario.otrasHabilidades, false, true],
-    ]],
-    ["7. Conocimientos", [
-      ["Conocimientos seleccionados", formulario.conocimientos, true, true],
-      ["Otros conocimientos", formulario.otrosConocimientos, false, true],
-    ]],
-    ["8. Justificación", [["Justificación", formulario.justificacion, false, true]]],
-  ];
+function BotonEditar({ paso, titulo, onEditar }) {
+  return (
+    <button type="button" className="boton-editar" onClick={() => onEditar(paso)} aria-label={`Editar ${titulo}`}>
+      <span aria-hidden="true" className="material-icons">edit</span>
+      Editar
+    </button>
+  );
+}
+
+// Los grupos siguen el orden de los pasos 1 a 6; cada uno permite volver a su paso para corregirlo.
+function RevisionSolicitud({ formulario, adjuntos = [], onEditar }) {
+  const grupos = obtenerSeccionesSolicitud(formulario);
 
   return (
-    <section className="formulario-seccion revision-seccion" aria-labelledby="titulo-revision">
-      <h2 id="titulo-revision">9. Revisión de la solicitud</h2>
-      <p>Revise toda la información diligenciada antes de enviar la solicitud completa.</p>
-      {grupos.map(([titulo, campos]) => (
-        <section className="revision-grupo" key={titulo} aria-labelledby={`revision-${titulo}`}>
-          <h3 id={`revision-${titulo}`}>{titulo}</h3>
-          <dl>
-            {campos.map(([etiqueta, valor, lista, completo]) => (
-              <div className={completo ? "revision-campo-completo" : ""} key={etiqueta}>
-                <dt>{etiqueta}</dt>
-                <dd><ValorRevision valor={valor} lista={lista} /></dd>
-              </div>
-            ))}
-          </dl>
+    <section className="paso" aria-labelledby="titulo-revision">
+      <EncabezadoPaso numero={7} comoTitulo id="titulo-revision" descripcion="Revise toda la información antes de enviar la solicitud. Puede editar cualquier sección." />
+      <div className="tarjetas">
+        {grupos.map(([titulo, campos], indice) => (
+          <section className="tarjeta revision-grupo" key={titulo} aria-labelledby={`revision-grupo-${indice}`}>
+            <header className="revision-grupo-encabezado">
+              <h3 id={`revision-grupo-${indice}`}>{titulo}</h3>
+              <BotonEditar paso={indice + 1} titulo={titulo} onEditar={onEditar} />
+            </header>
+            <dl>
+              {campos.map(([etiqueta, valor, lista, completo]) => (
+                <div className={completo ? "revision-campo-completo" : ""} key={etiqueta}>
+                  <dt>{etiqueta}</dt>
+                  <dd><ValorRevision valor={valor} lista={lista} /></dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        ))}
+        <section className="tarjeta revision-grupo" aria-labelledby="revision-adjuntos">
+          <header className="revision-grupo-encabezado">
+            <h3 id="revision-adjuntos">Documentos adjuntos</h3>
+            <BotonEditar paso={6} titulo="Documentos adjuntos" onEditar={onEditar} />
+          </header>
+          {adjuntos.length > 0
+            ? <ListaAdjuntos adjuntos={adjuntos} />
+            : <p className="revision-vacio">No se adjuntaron documentos.</p>}
         </section>
-      ))}
+      </div>
     </section>
   );
 }

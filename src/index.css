@@ -1,11 +1,11 @@
-@import url("https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&display=swap");
-
+/* Work Sans (400/600) se carga en index.html. */
 :root {
-  font-family: "Work Sans", "Segoe UI", sans-serif;
+  font-family: "Work Sans", sans-serif;
   font-size: 16px;
   font-weight: 400;
+  line-height: 1.5;
   color: #001631;
-  background: #ffffff;
+  background: #f1f1f1;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -13,9 +13,9 @@
 
 * { box-sizing: border-box; }
 
-body { min-width: 0; margin: 0; }
+body { min-width: 0; margin: 0; background: #f1f1f1; }
 
-button, input, textarea { font: inherit; }
+button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 
 #root { min-height: 100svh; }

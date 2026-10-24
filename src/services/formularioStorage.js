@@ -1,4 +1,5 @@
-const CLAVE_BORRADOR = "formularioOcupacion";
+// v2: pasos reorganizados (7 en lugar de 9); los borradores anteriores no son compatibles.
+const CLAVE_BORRADOR = "formularioOcupacion-v2";
 
 export function guardarBorrador(formulario, currentStep, completedSteps = []) {
   try {

@@ -1,5 +1,7 @@
 import { useState } from "react";
-import ocupacionesMock from "../data/ocupacionesMock";
+import { buscarOcupaciones, obtenerOcupaciones } from "../services/ocupacionesService";
+
+const MAXIMO_RESULTADOS = 8;
 
 const secciones = [
   ["ocupacion", "Ocupación", "Escriba el nombre de la ocupación propuesta"],
@@ -23,7 +25,7 @@ function FormularioAlterno() {
   const [errorValidacion, setErrorValidacion] = useState("");
   const [referenciasVisibles, setReferenciasVisibles] = useState({});
   const esAjuste = formulario.tipoSolicitud.includes("Ajuste");
-  const ocupacionSeleccionada = ocupacionesMock.find((ocupacion) => ocupacion.id === formulario.ocupacionBase);
+  const ocupacionSeleccionada = obtenerOcupaciones().find((ocupacion) => ocupacion.id === formulario.ocupacionBase);
 
   const cambiar = (evento) => {
     const { name, value, files, checked } = evento.target;
@@ -91,9 +93,14 @@ function FormularioAlterno() {
             <legend className="alterno-label">Tipo de solicitud</legend>
             <div className="alterno-opciones"><Check name="tipoSolicitud" value="Ajuste" checked={formulario.tipoSolicitud.includes("Ajuste")} onChange={cambiar} /><Check name="tipoSolicitud" value="Inclusión de nueva ocupación" checked={formulario.tipoSolicitud.includes("Inclusión de nueva ocupación")} onChange={cambiar} /></div>
           </fieldset>
-          <label className="alterno-select-label" htmlFor="ocupacionBase">Escriba el código o el nombre de la ocupación sobre la cual tiene observaciones:</label>
-          <select className="alterno-select" id="ocupacionBase" name="ocupacionBase" value={formulario.ocupacionBase} onChange={cambiar} disabled={!esAjuste}><option value="">{esAjuste ? "Seleccione una ocupación" : "No aplica para inclusión de nueva ocupación"}</option>{ocupacionesMock.map((ocupacion) => <option value={ocupacion.id} key={ocupacion.id}>{ocupacion.codigo} {ocupacion.nombre}</option>)}</select>
-          {ocupacionSeleccionada && <div className="ocupacion-seleccionada"><strong>{ocupacionSeleccionada.codigo} · {ocupacionSeleccionada.nombre}</strong><span>{ocupacionSeleccionada.descripcion}</span></div>}
+          <fieldset className="alterno-grupo-opciones" disabled={!esAjuste}>
+            <legend className="alterno-select-label">Busque por código o por término la ocupación sobre la cual tiene observaciones:</legend>
+            <div className="alterno-buscadores">
+              <BuscadorOcupacion clasificacion="CNO" seleccionadaId={formulario.ocupacionBase} onSeleccionar={(id) => setFormulario({ ...formulario, ocupacionBase: id })} deshabilitado={!esAjuste} />
+              <BuscadorOcupacion clasificacion="CUOC" seleccionadaId={formulario.ocupacionBase} onSeleccionar={(id) => setFormulario({ ...formulario, ocupacionBase: id })} deshabilitado={!esAjuste} />
+            </div>
+          </fieldset>
+          {ocupacionSeleccionada && <div className="ocupacion-seleccionada" role="status"><strong>{ocupacionSeleccionada.clasificacion} · {ocupacionSeleccionada.codigo} · {ocupacionSeleccionada.nombre}</strong><span>{ocupacionSeleccionada.descripcion}</span></div>}
           <div className="alterno-secciones">
             {secciones.map(([id, titulo, placeholder]) => (
               <div className="alterno-fila" key={id}>
@@ -127,7 +134,7 @@ function FormularioAlterno() {
         </Seccion>
         {errorValidacion && <p className="alterno-error" role="alert">{errorValidacion}</p>}
         {guardado && <p className="alterno-exito" role="status">La solicitud fue guardada correctamente.</p>}
-        <button className="alterno-guardar" type="submit"><span aria-hidden="true">▣</span> Guardar solicitud</button>
+        <button className="alterno-guardar" type="submit"><span aria-hidden="true" className="material-icons">save</span> Guardar solicitud</button>
       </form>
     </main>
   );
@@ -135,7 +142,41 @@ function FormularioAlterno() {
 
 function Campo({ id, label, type = "text", value, onChange, placeholder }) { return <div className="alterno-campo"><label htmlFor={id}>{label}:</label><input id={id} name={id} type={type} value={value} onChange={onChange} placeholder={placeholder} /></div>; }
 function Check({ name, value, type = "checkbox", checked, onChange }) { return <label className="alterno-check"><input name={name} value={value} type={type} checked={checked} onChange={onChange} />{value}</label>; }
-function Seccion({ titulo, children }) { return <fieldset className="alterno-bloque"><legend>☷ {titulo}</legend>{children}</fieldset>; }
+function BuscadorOcupacion({ clasificacion, seleccionadaId, onSeleccionar, deshabilitado }) {
+  const [termino, setTermino] = useState("");
+  const id = `buscar-${clasificacion.toLowerCase()}`;
+  const hayTermino = termino.trim() !== "";
+  const resultados = hayTermino ? buscarOcupaciones({ termino, clasificacion: clasificacion.toLowerCase() }) : [];
+  const estado = deshabilitado
+    ? "No aplica para inclusión de nueva ocupación"
+    : !hayTermino
+      ? `Escriba un código o un término de la ${clasificacion}`
+      : resultados.length === 0
+        ? `No hay ocupaciones ${clasificacion} que coincidan`
+        : resultados.length > MAXIMO_RESULTADOS
+          ? `Mostrando ${MAXIMO_RESULTADOS} de ${resultados.length} resultados; precise la búsqueda`
+          : `${resultados.length} ${resultados.length === 1 ? "resultado" : "resultados"} en ${clasificacion}`;
+
+  return (
+    <div className="alterno-buscador">
+      <label htmlFor={id}>Buscar en {clasificacion}</label>
+      <input id={id} type="search" value={termino} onChange={(evento) => setTermino(evento.target.value)} placeholder={`Código o término ${clasificacion}`} aria-describedby={`${id}-estado`} />
+      <p id={`${id}-estado`} className="alterno-buscador-estado" aria-live="polite">{estado}</p>
+      {resultados.length > 0 && (
+        <ul className="alterno-buscador-resultados" aria-label={`Resultados ${clasificacion}`}>
+          {resultados.slice(0, MAXIMO_RESULTADOS).map((ocupacion) => (
+            <li key={ocupacion.id}>
+              <button type="button" aria-pressed={ocupacion.id === seleccionadaId} onClick={() => { onSeleccionar(ocupacion.id); setTermino(""); }}>
+                <strong>{ocupacion.codigo}</strong> {ocupacion.nombre}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+function Seccion({ titulo, children }) { return <fieldset className="alterno-bloque"><legend>{titulo}</legend>{children}</fieldset>; }
 function obtenerInformacion(ocupacion, id) {
   if (!ocupacion) return "";
   if (id === "ocupacion") return `${ocupacion.codigo} ${ocupacion.nombre}`;

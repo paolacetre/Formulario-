@@ -1,55 +1,105 @@
 import { useEffect, useState } from "react";
+import { CONOCIMIENTOS_CATALOGO, HABILIDADES_CATALOGO } from "../data/instrumento3.models";
+import { normalizarTexto } from "../services/catalogosCno";
+import { generarRadicado } from "../services/fichaSolicitud";
 import { eliminarBorrador, guardarBorrador, obtenerBorrador } from "../services/formularioStorage";
+import ConfirmacionSolicitud from "./ConfirmacionSolicitud";
 import DatosGenerales from "./DatosGenerales";
 import PropuestaOcupacion from "./PropuestaOcupacion";
-import FuncionesPrincipales from "./FuncionesPrincipales";
-import DenominacionesOcupacionales from "./DenominacionesOcupacionales";
-import OcupacionesRelacionadas from "./OcupacionesRelacionadas";
+import FuncionesDenominaciones from "./FuncionesDenominaciones";
 import Habilidades from "./Habilidades";
 import Conocimientos from "./Conocimientos";
 import Justificacion from "./Justificacion";
+import { PASOS } from "./pasosSolicitud";
 import ProgresoFormulario from "./ProgresoFormulario";
 import RevisionSolicitud from "./RevisionSolicitud";
+import "./SolicitudOcupacion.css";
 
+// Cambia cuando los catálogos de área, nivel, habilidades o conocimientos cambian de origen.
+const VERSION_CATALOGO = "CNO 2026";
+
+// funciones, denominaciones, ocupacionesRelacionadas, habilidadesManuales y conocimientosManuales:
+// [{ codigo, nombre, descripcion, ocupacion, manual }]. habilidades y conocimientos: códigos del catálogo.
 const formularioInicial = {
+  versionCatalogo: VERSION_CATALOGO,
   fecha: new Date().toISOString().slice(0, 10), nombreApellidos: "", documentoIdentidad: "", email: "", telefono: "",
-  departamento: "", municipio: "", empresaEntidad: "", cargo: "", profesion: "", sector: "",
+  departamento: "", municipio: "", empresaEntidad: "", cargo: "", sector: "",
   nombreOcupacion: "", areaDesempeno: "", nivelCualificacion: "", descripcion: "", justificacion: "",
-  funciones: ["", "", ""], denominaciones: ["", ""], ocupacionesRelacionadas: ["", ""], habilidades: [], conocimientos: [],
-  otrasHabilidades: "", otrosConocimientos: "",
+  funciones: [], denominaciones: [], ocupacionesRelacionadas: [], habilidades: [], conocimientos: [],
+  habilidadesManuales: [], conocimientosManuales: [],
 };
 
-const ultimaSesion = 9;
+const ultimaSesion = 7;
+
+function esBorradorAnterior(borrador) {
+  return Boolean(borrador?.formulario) && borrador.formulario.versionCatalogo !== VERSION_CATALOGO;
+}
+
+function codigosDelCatalogo(catalogo, valores) {
+  return (Array.isArray(valores) ? valores : [])
+    .map((valor) => catalogo.find((elemento) => elemento.codigo === valor || normalizarTexto(elemento.nombre) === normalizarTexto(valor))?.codigo)
+    .filter(Boolean);
+}
+
+// Acepta también el formato anterior { codigo, texto, manual }.
+function listaDeElementos(valor) {
+  return (Array.isArray(valor) ? valor : [])
+    .filter((elemento) => typeof (elemento?.nombre ?? elemento?.texto) === "string")
+    .map((elemento) => ({ codigo: elemento.codigo ?? "", nombre: elemento.nombre ?? elemento.texto, descripcion: elemento.descripcion ?? "", ocupacion: elemento.ocupacion ?? null, manual: Boolean(elemento.manual) }));
+}
+
+// Los campos de texto anteriores "Otras habilidades" y "Otros conocimientos" separaban los valores con "+".
+function manualesDesdeTexto(texto) {
+  return String(texto ?? "").split("+").map((nombre) => nombre.trim()).filter(Boolean)
+    .map((nombre) => ({ codigo: "", nombre, descripcion: "", ocupacion: null, manual: true }));
+}
 
 function combinarFormulario(guardado) {
+  const { funcionesDenominaciones, otrasHabilidades, otrosConocimientos, ...resto } = guardado;
+  const mismaVersion = guardado.versionCatalogo === VERSION_CATALOGO;
+  const funciones = listaDeElementos(guardado.funciones);
+
   return {
     ...formularioInicial,
-    ...guardado,
+    ...resto,
+    versionCatalogo: VERSION_CATALOGO,
     nombreApellidos: guardado.nombreApellidos || guardado.nombreCompleto || "",
     email: guardado.email || guardado.correo || "",
-    funciones: guardado.funciones || formularioInicial.funciones,
-    denominaciones: guardado.denominaciones || formularioInicial.denominaciones,
-    ocupacionesRelacionadas: guardado.ocupacionesRelacionadas || formularioInicial.ocupacionesRelacionadas,
-    habilidades: guardado.habilidades || [],
-    conocimientos: guardado.conocimientos || [],
+    // Los borradores anteriores usaban otras listas de área y nivel: se deben elegir de nuevo.
+    areaDesempeno: mismaVersion ? guardado.areaDesempeno || "" : "",
+    nivelCualificacion: mismaVersion ? guardado.nivelCualificacion || "" : "",
+    // El campo abierto anterior se conserva como una función registrada manualmente.
+    funciones: funciones.length > 0 || !funcionesDenominaciones?.trim() ? funciones : [{ codigo: "", nombre: funcionesDenominaciones.trim(), descripcion: "", ocupacion: null, manual: true }],
+    denominaciones: listaDeElementos(guardado.denominaciones),
+    ocupacionesRelacionadas: listaDeElementos(guardado.ocupacionesRelacionadas),
+    habilidades: codigosDelCatalogo(HABILIDADES_CATALOGO, guardado.habilidades),
+    conocimientos: codigosDelCatalogo(CONOCIMIENTOS_CATALOGO, guardado.conocimientos),
+    habilidadesManuales: [...listaDeElementos(guardado.habilidadesManuales), ...manualesDesdeTexto(otrasHabilidades)],
+    conocimientosManuales: [...listaDeElementos(guardado.conocimientosManuales), ...manualesDesdeTexto(otrosConocimientos)],
   };
 }
 
 function SolicitudOcupacion() {
   const [borradorInicial] = useState(obtenerBorrador);
   const [mostrarFormulario, setMostrarFormulario] = useState(() => Boolean(borradorInicial?.formulario));
-  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+  const [solicitudRadicada, setSolicitudRadicada] = useState(null);
   const [formulario, setFormulario] = useState(() => borradorInicial?.formulario ? combinarFormulario(borradorInicial.formulario) : formularioInicial);
-  const [currentStep, setCurrentStep] = useState(() => Math.min(Math.max(Number(borradorInicial?.currentStep) || 1, 1), ultimaSesion));
-  const [completedSteps, setCompletedSteps] = useState(() => borradorInicial?.completedSteps || Array.from({ length: Math.max((Number(borradorInicial?.currentStep) || 1) - 1, 0) }, (_, indice) => indice + 1));
+  // Un borrador anterior vuelve al paso 2 para elegir de nuevo el área y el nivel.
+  const [currentStep, setCurrentStep] = useState(() => Math.min(Math.max(Number(borradorInicial?.currentStep) || 1, 1), esBorradorAnterior(borradorInicial) ? 2 : ultimaSesion));
+  const [completedSteps, setCompletedSteps] = useState(() => {
+    const completadas = borradorInicial?.completedSteps || Array.from({ length: Math.max((Number(borradorInicial?.currentStep) || 1) - 1, 0) }, (_, indice) => indice + 1);
+    return esBorradorAnterior(borradorInicial) ? completadas.filter((paso) => paso < 2) : completadas;
+  });
   const [error, setError] = useState("");
   const [guardado, setGuardado] = useState(Boolean(borradorInicial?.formulario));
+  // Los archivos no se pueden guardar en localStorage, por eso viven fuera del borrador.
+  const [adjuntos, setAdjuntos] = useState([]);
 
   useEffect(() => {
-    if (!mostrarFormulario || mostrarConfirmacion) return undefined;
+    if (!mostrarFormulario || solicitudRadicada) return undefined;
     guardarBorrador(formulario, currentStep, completedSteps);
     return undefined;
-  }, [formulario, currentStep, completedSteps, mostrarFormulario, mostrarConfirmacion]);
+  }, [formulario, currentStep, completedSteps, mostrarFormulario, solicitudRadicada]);
 
   const manejarCambio = (evento) => {
     const { name, value } = evento.target;
@@ -58,20 +108,10 @@ function SolicitudOcupacion() {
     setError("");
   };
 
-  const manejarLista = (nombre, indice, valor) => {
-    setFormulario((actual) => ({ ...actual, [nombre]: actual[nombre].map((item, itemIndice) => itemIndice === indice ? valor : item) }));
+  const actualizarCampo = (nombre, valor) => {
+    setFormulario((actual) => ({ ...actual, [nombre]: valor }));
     setGuardado(false);
     setError("");
-  };
-
-  const agregarElemento = (nombre) => {
-    setFormulario((actual) => ({ ...actual, [nombre]: [...actual[nombre], ""] }));
-    setGuardado(false);
-  };
-
-  const quitarElemento = (nombre, indice) => {
-    setFormulario((actual) => ({ ...actual, [nombre]: actual[nombre].filter((_, itemIndice) => itemIndice !== indice) }));
-    setGuardado(false);
   };
 
   const alternarCatalogo = (nombre, valor) => {
@@ -79,18 +119,13 @@ function SolicitudOcupacion() {
     setGuardado(false);
   };
 
-  const listaEditable = (nombre, tipo, texto, placeholder) => (
-    <div className="lista-editable">
-      {formulario[nombre].map((valor, indice) => (
-        <div className="elemento-editable" key={`${nombre}-${indice}`}>
-          <label className="sr-only" htmlFor={`${nombre}-${indice}`}>{texto} {indice + 1}</label>
-          {tipo === "textarea" ? <textarea id={`${nombre}-${indice}`} name={`${nombre}-${indice}`} value={valor} onChange={(evento) => manejarLista(nombre, indice, evento.target.value)} rows="3" placeholder={placeholder} /> : <input id={`${nombre}-${indice}`} name={`${nombre}-${indice}`} value={valor} onChange={(evento) => manejarLista(nombre, indice, evento.target.value)} placeholder={placeholder} />}
-          {formulario[nombre].length > 1 && <button type="button" className="boton-quitar" onClick={() => quitarElemento(nombre, indice)} aria-label={`Quitar ${texto.toLowerCase()} ${indice + 1}`}>×</button>}
-        </div>
-      ))}
-      <button type="button" className="boton-agregar" onClick={() => agregarElemento(nombre)}>+ Agregar {texto.toLowerCase()}</button>
-    </div>
-  );
+  const agregarAdjuntos = (archivos) => {
+    setAdjuntos((actuales) => [...actuales, ...archivos.filter((archivo) => !actuales.some((actual) => actual.name === archivo.name && actual.size === archivo.size))]);
+  };
+
+  const quitarAdjunto = (indice) => {
+    setAdjuntos((actuales) => actuales.filter((_, itemIndice) => itemIndice !== indice));
+  };
 
   const validarSesion = (evento) => {
     if (!evento.currentTarget.checkValidity()) {
@@ -108,55 +143,117 @@ function SolicitudOcupacion() {
     guardarBorrador(formulario, currentStep, sesionesCompletadas);
     setCompletedSteps(sesionesCompletadas);
     setGuardado(true);
+    irAPaso(Math.min(currentStep + 1, ultimaSesion));
+  };
+
+  // Al cambiar de paso se vuelve al inicio de la página para empezar a leerlo desde arriba.
+  const irAPaso = (paso) => {
+    setCurrentStep(paso);
     setError("");
-    setCurrentStep((actual) => Math.min(actual + 1, ultimaSesion));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const enviarSolicitud = (evento) => {
     evento.preventDefault();
-    console.log("Solicitud de ocupación preparada:", formulario);
+    const solicitud = { radicado: generarRadicado(), formulario, adjuntos };
+    console.log("Solicitud de ocupación preparada:", solicitud);
     eliminarBorrador();
-    setMostrarConfirmacion(true);
+    setSolicitudRadicada(solicitud);
     setMostrarFormulario(false);
+    window.scrollTo({ top: 0 });
   };
 
   const renderizarSesion = () => {
     if (currentStep === 1) return <DatosGenerales formulario={formulario} manejarCambio={manejarCambio} />;
-    if (currentStep === 2) return <PropuestaOcupacion formulario={formulario} manejarCambio={manejarCambio} />;
-    if (currentStep === 3) return <FuncionesPrincipales formulario={formulario} manejarLista={manejarLista} agregarElemento={agregarElemento} quitarElemento={quitarElemento} />;
-    if (currentStep === 4) return <DenominacionesOcupacionales listaEditable={listaEditable} />;
-    if (currentStep === 5) return <OcupacionesRelacionadas listaEditable={listaEditable} />;
-    if (currentStep === 6) return <Habilidades formulario={formulario} alternarCatalogo={alternarCatalogo} manejarCambio={manejarCambio} />;
-    if (currentStep === 7) return <Conocimientos formulario={formulario} alternarCatalogo={alternarCatalogo} manejarCambio={manejarCambio} />;
-    if (currentStep === 8) return <Justificacion formulario={formulario} manejarCambio={manejarCambio} />;
-    return <RevisionSolicitud formulario={formulario} />;
+    if (currentStep === 2) return <PropuestaOcupacion formulario={formulario} manejarCambio={manejarCambio} actualizarCampo={actualizarCampo} />;
+    if (currentStep === 3) return <FuncionesDenominaciones formulario={formulario} actualizarCampo={actualizarCampo} />;
+    if (currentStep === 4) return <Habilidades formulario={formulario} alternarCatalogo={alternarCatalogo} actualizarCampo={actualizarCampo} />;
+    if (currentStep === 5) return <Conocimientos formulario={formulario} alternarCatalogo={alternarCatalogo} actualizarCampo={actualizarCampo} />;
+    if (currentStep === 6) return <Justificacion formulario={formulario} manejarCambio={manejarCambio} adjuntos={adjuntos} agregarAdjuntos={agregarAdjuntos} quitarAdjunto={quitarAdjunto} />;
+    return <RevisionSolicitud formulario={formulario} adjuntos={adjuntos} onEditar={irAPaso} />;
   };
 
-  if (!mostrarFormulario) {
-    return <main className="pagina"><section className="inicio-card"><div className="inicio-contenido"><span className="etiqueta">SOLICITUD</span><h1>{mostrarConfirmacion ? "Solicitud enviada correctamente" : "Creación de nueva ocupación"}</h1><p>{mostrarConfirmacion ? "La información quedó preparada para que posteriormente el servicio institucional pueda enviarla o notificarla." : "Solicite la creación de una nueva ocupación diligenciando la información requerida."}</p>{!mostrarConfirmacion && <button type="button" className="boton boton-principal" onClick={() => { setMostrarConfirmacion(false); setMostrarFormulario(true); }}>Solicitar nueva ocupación</button>}</div></section></main>;
+  if (solicitudRadicada) {
+    return <ConfirmacionSolicitud solicitud={solicitudRadicada} />;
   }
 
+  if (!mostrarFormulario) {
+    return (
+      <main className="pagina solicitud">
+        <section className="solicitud-inicio" aria-labelledby="solicitud-inicio-titulo">
+          <span aria-hidden="true" className="tarjeta-icono tarjeta-icono-grande material-icons">assignment</span>
+          <p className="solicitud-eyebrow">Solicitud de creación</p>
+          <h1 id="solicitud-inicio-titulo">Creación de nueva ocupación</h1>
+          <p className="solicitud-inicio-texto">Proponga un nuevo perfil ocupacional para la Clasificación Nacional de Ocupaciones (CNO). La solicitud tiene {PASOS.length} pasos y su avance se guarda automáticamente en este navegador.</p>
+          <ol className="solicitud-inicio-pasos">
+            {PASOS.map((paso, indice) => (
+              <li key={paso.titulo}><span className="paso-circulo" aria-hidden="true">{indice + 1}</span>{paso.titulo}</li>
+            ))}
+          </ol>
+          <button type="button" className="boton boton-principal" onClick={() => setMostrarFormulario(true)}>
+            Comenzar solicitud
+            <span aria-hidden="true" className="material-icons">arrow_forward</span>
+          </button>
+        </section>
+      </main>
+    );
+  }
+
+  const esUltimoPaso = currentStep === ultimaSesion;
+  const textoContinuar = esUltimoPaso ? "Enviar solicitud" : currentStep === ultimaSesion - 1 ? "Revisar solicitud" : "Guardar y continuar";
+
   return (
-    <main className="pagina">
-      <section className="formulario-card">
-        <header className="formulario-header">
-          <span className="etiqueta">PROPUESTA OCUPACIONAL</span>
-          <h1>Propuesta de nuevo perfil ocupacional</h1>
-          <p>Complete la solicitud por sesiones. Los datos se guardan automáticamente.</p>
-          <ProgresoFormulario currentStep={currentStep} completedSteps={completedSteps} onStepChange={(paso) => { setCurrentStep(paso); setError(""); }} />
+    <main className="pagina solicitud">
+      <div className="solicitud-contenedor">
+        <header className="solicitud-encabezado">
+          <div className="solicitud-encabezado-principal">
+            <span aria-hidden="true" className="tarjeta-icono tarjeta-icono-grande material-icons">assignment</span>
+            <div>
+              <p className="solicitud-eyebrow">Propuesta ocupacional</p>
+              <h1>Propuesta de nuevo perfil ocupacional</h1>
+              <p className="solicitud-encabezado-texto">Complete la solicitud paso a paso. Su avance se guarda automáticamente.</p>
+            </div>
+          </div>
+          <ProgresoFormulario currentStep={currentStep} completedSteps={completedSteps} onStepChange={irAPaso} />
         </header>
 
-        <form onSubmit={currentStep === ultimaSesion ? enviarSolicitud : avanzar} aria-describedby="indicacion-obligatorios">
-          {currentStep === 1 && <p id="indicacion-obligatorios" className="referencia-formulario"><strong>Orientación:</strong> diligencie las casillas de propuesta con información clara y verificable. Los campos marcados con <span aria-hidden="true" className="obligatorio">*</span> son obligatorios.</p>}
+        {/* noValidate: la validación la hace validarSesion para mostrar también el aviso del paso. */}
+        <form className="solicitud-formulario" onSubmit={esUltimoPaso ? enviarSolicitud : avanzar} noValidate>
+          {currentStep === 1 && (
+            <div id="indicacion-obligatorios" className="aviso aviso-info">
+              <span aria-hidden="true" className="material-icons">info</span>
+              <p><strong>Orientación:</strong> diligencie la propuesta con información clara y verificable. Los campos marcados con <span aria-hidden="true" className="obligatorio">*</span><span className="sr-only">asterisco</span> son obligatorios.</p>
+            </div>
+          )}
           {renderizarSesion()}
-          {error && <p className="error-formulario" role="alert">{error}</p>}
-          {currentStep < ultimaSesion && <p className="estado-guardado" role="status">{guardado ? "✓ Información guardada" : "✓ Información guardada automáticamente"}</p>}
-          <div className="acciones">
-            <button type="button" className="boton boton-secundario" onClick={() => currentStep === 1 ? setMostrarFormulario(false) : setCurrentStep((actual) => actual - 1)}>{currentStep === 1 ? "Cancelar" : "Anterior"}</button>
-            <button type="submit" className="boton boton-principal">{currentStep === ultimaSesion ? "Enviar solicitud" : currentStep === ultimaSesion - 1 ? "Revisar solicitud" : "Guardar y continuar"}</button>
+          {error && (
+            <div className="aviso aviso-error" role="alert">
+              <span aria-hidden="true" className="material-icons">error_outline</span>
+              <p>{error}</p>
+            </div>
+          )}
+          <div className="solicitud-acciones">
+            <p className="estado-guardado" role="status">
+              {!esUltimoPaso && (
+                <>
+                  <span aria-hidden="true" className="material-icons">cloud_done</span>
+                  {guardado ? "Información guardada" : "Guardado automático activo"}
+                </>
+              )}
+            </p>
+            <div className="solicitud-acciones-botones">
+              <button type="button" className="boton boton-secundario" onClick={() => (currentStep === 1 ? setMostrarFormulario(false) : irAPaso(currentStep - 1))}>
+                {currentStep > 1 && <span aria-hidden="true" className="material-icons">arrow_back</span>}
+                {currentStep === 1 ? "Cancelar" : "Anterior"}
+              </button>
+              <button type="submit" className="boton boton-principal">
+                {textoContinuar}
+                <span aria-hidden="true" className="material-icons">{esUltimoPaso ? "send" : "arrow_forward"}</span>
+              </button>
+            </div>
           </div>
         </form>
-      </section>
+      </div>
     </main>
   );
 }
