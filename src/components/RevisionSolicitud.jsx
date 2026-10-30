@@ -27,7 +27,7 @@ function RevisionSolicitud({ formulario, adjuntos = [], onEditar }) {
 
   return (
     <section className="paso" aria-labelledby="titulo-revision">
-      <EncabezadoPaso numero={7} comoTitulo id="titulo-revision" descripcion="Revise toda la información antes de enviar la solicitud. Puede editar cualquier sección." />
+      <EncabezadoPaso numero={7} comoTitulo id="titulo-revision" descripcion="Revise toda la información antes de enviar. Puede editar cualquier sección. Al enviarla, la solicitud queda radicada y llega al equipo de analistas." />
       <div className="tarjetas">
         {grupos.map(([titulo, campos], indice) => (
           <section className="tarjeta revision-grupo" key={titulo} aria-labelledby={`revision-grupo-${indice}`}>

@@ -33,7 +33,9 @@ Este documento resume únicamente lo que corresponde a los dos formularios del p
 
 ### Datos y soporte del flujo
 - `src/services/formularioStorage.js`
-- `src/services/fichaSolicitud.js` (radicado y secciones del resumen de revisión)
+- `src/services/fichaSolicitud.js` (etiquetas y secciones del resumen de revisión)
+- `src/services/solicitudesService.js` (envío al backend, fecha de envío y correo de contacto)
+- `.env` y `.env.development` (correo de contacto `VITE_CORREO_CONTACTO`, modo de radicación `VITE_MODO_SOLICITUDES` y URL del backend `VITE_API_URL`)
 - `src/data/instrumento3.models.js` (área de desempeño, nivel de cualificación, habilidades y conocimientos de la CNO 2026)
 - `src/services/catalogosCno.js` (carga diferida y búsqueda de las listas de la CNO)
 - `src/data/cno/funciones.json`, `denominaciones.json` y `ocupaciones.json` (registros activos de la CNO 2026)
@@ -45,7 +47,10 @@ Este documento resume únicamente lo que corresponde a los dos formularios del p
 - Funciones, denominaciones y ocupaciones relacionadas tienen cada una su tarjeta con una lista desplegable con buscador (código, nombre y descripción u ocupación asociada). Al elegir una opción se agrega al listado como tarjeta; cada sección permite crear elementos manualmente. Se guardan como `{ codigo, nombre, descripcion, ocupacion, manual }`.
 - Habilidades (41) y conocimientos (78) se seleccionan desde una tabla con código, nombre y descripción (`HABILIDADES_CATALOGO` y `CONOCIMIENTOS_CATALOGO`) y se guardan por código. Debajo de cada tabla se pueden agregar otras (`habilidadesManuales`, `conocimientosManuales`).
 - Guarda borrador en `localStorage`.
-- Actualmente usa `console.log` al enviar la solicitud; en el proyecto real se debe reemplazar por un endpoint institucional.
+- Radicación con `VITE_MODO_SOLICITUDES`: `mock` (actual, sin base de datos) la simula en el navegador con el mismo contrato y la guarda en `localStorage` (`clasificacion-solicitudes-ocupacion`, con `estado: "RADICADA"` y `rolDestino: "ANALISTA"`); `api` la envía al backend.
+- En modo `api`, al enviar radica la solicitud en el backend del proyecto Clasificación de Ocupaciones (`POST /api/public/solicitudes-ocupacion`, público, con `tipo: "wizard"`). El backend devuelve el radicado consecutivo `SOL-AAAA-000123` (secuencia del id de `clasificacion.solicitud_ocupacion`) y la fecha de registro, que se muestran en la confirmación junto con el mensaje "Para más información, comuníquese al correo …" (`VITE_CORREO_CONTACTO`; vacío = no se muestra).
+- La solicitud queda disponible para los roles ANALISTA y ADMINISTRADOR (`GET /api/solicitudes-ocupacion`). Falta la pantalla del analista que la consulte en el frontend institucional.
+- Si el backend falla o limita los envíos (429), muestra el aviso y conserva los datos para reintentar.
 
 ### Elementos que sí deben integrarse
 - La vista `FormularioOcupacion`.
@@ -55,8 +60,7 @@ Este documento resume únicamente lo que corresponde a los dos formularios del p
 
 ### Elementos que deben cambiarse en producción
 - `guardarBorrador` / `obtenerBorrador` debe reemplazarse por backend o servicio real.
-- `console.log` del envío final debe ir a un servicio API, que también debe recibir los archivos adjuntos.
-- El número de radicado (`generarRadicado`) se genera en el navegador solo para el prototipo; en producción debe asignarlo el backend.
+- El servicio de solicitudes solo recibe datos: de los archivos adjuntos se envían el nombre, el tamaño y el tipo. Para guardar los archivos el backend necesita un endpoint de carga.
 - Los valores de departamentos, municipios y sectores deben conectarse con datos reales.
 - Los datos de `src/data/cno/` y de `instrumento3.models.js` se generaron desde `CNO_2026_10-09Actualizado (2).xlsx` (igual a `back/database/siembra/cno.xlsx`). Como ese libro corta textos en 255 caracteres, las descripciones de las áreas se tomaron completas del `Instrumento 3` (hoja Codecs) y las de algunas habilidades, conocimientos y la habilidad 19 y 30 de `2CNO_2024_(2025-06-13).xlsx`. En producción deben consultarse en la API del backend (`cno_funcion`, `cno_denominacion`, `cno_ocupacion`, `habilidad_destreza`, `cno_conocimiento`, `cno_area_desempeno`, `cno_nivel_cualificacion`).
 
@@ -187,7 +191,9 @@ Si la intención es llevar estos formularios al proyecto real, lo más important
 - `src/components/SolicitudOcupacion.jsx`
 - todos los componentes de la carpeta `src/components` que usa `SolicitudOcupacion`
 - `src/services/formularioStorage.js`
-- `src/services/fichaSolicitud.js` (radicado y secciones del resumen de revisión)
+- `src/services/fichaSolicitud.js` (etiquetas y secciones del resumen de revisión)
+- `src/services/solicitudesService.js` (envío al backend, fecha de envío y correo de contacto)
+- `.env` y `.env.development` (correo de contacto `VITE_CORREO_CONTACTO`, modo de radicación `VITE_MODO_SOLICITUDES` y URL del backend `VITE_API_URL`)
 - `src/views/FormularioAlterno.jsx`
 - `src/data/ocupacionesMock.js` solo como dato de prueba local
 - `src/App.jsx` para las rutas

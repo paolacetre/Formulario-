@@ -41,11 +41,6 @@ export function formatearTamano(bytes) {
   return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-// Prototipo: en producción el número de radicado debe asignarlo el servicio institucional.
-export function generarRadicado(fecha = new Date()) {
-  return `SOL-${fecha.getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-}
-
 // Cada campo: [etiqueta, valor, esLista, ocupaFilaCompleta]
 export function obtenerSeccionesSolicitud(formulario) {
   return [

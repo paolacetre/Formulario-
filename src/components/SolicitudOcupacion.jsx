@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CONOCIMIENTOS_CATALOGO, HABILIDADES_CATALOGO } from "../data/instrumento3.models";
 import { normalizarTexto } from "../services/catalogosCno";
-import { generarRadicado } from "../services/fichaSolicitud";
+import { mensajeErrorRadicado, radicarSolicitud } from "../services/solicitudesService";
 import { eliminarBorrador, guardarBorrador, obtenerBorrador } from "../services/formularioStorage";
 import ConfirmacionSolicitud from "./ConfirmacionSolicitud";
 import DatosGenerales from "./DatosGenerales";
@@ -30,6 +30,32 @@ const formularioInicial = {
 };
 
 const ultimaSesion = 7;
+
+// Campos obligatorios de toda la solicitud. Se revisan otra vez antes de radicar, porque la persona
+// puede volver a un paso ya completado, borrar un dato y saltar a la revisión con el indicador de pasos.
+const CAMPOS_OBLIGATORIOS = [
+  { paso: 1, campo: "nombreApellidos", etiqueta: "Nombre y apellidos" },
+  { paso: 1, campo: "email", etiqueta: "Correo electrónico", valido: (valor) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor) },
+  { paso: 2, campo: "nombreOcupacion", etiqueta: "Nombre de la ocupación" },
+  { paso: 2, campo: "descripcion", etiqueta: "Descripción de la ocupación" },
+  { paso: 2, campo: "nivelCualificacion", etiqueta: "Nivel de cualificación" },
+  { paso: 2, campo: "areaDesempeno", etiqueta: "Área de desempeño" },
+  { paso: 6, campo: "justificacion", etiqueta: "Justificación" },
+];
+
+function camposObligatoriosFaltantes(formulario) {
+  return CAMPOS_OBLIGATORIOS.filter(({ campo, valido }) => {
+    const valor = String(formulario[campo] ?? "").trim();
+    return !valor || (valido && !valido(valor));
+  });
+}
+
+// Un campo obligatorio con solo espacios cuenta como vacío.
+function marcarCamposSoloEspacios(formularioDom) {
+  formularioDom.querySelectorAll("input[required], textarea[required]").forEach((campo) => {
+    campo.setCustomValidity(campo.value !== "" && campo.value.trim() === "" ? "Este campo no puede quedar solo con espacios." : "");
+  });
+}
 
 function esBorradorAnterior(borrador) {
   return Boolean(borrador?.formulario) && borrador.formulario.versionCatalogo !== VERSION_CATALOGO;
@@ -94,6 +120,17 @@ function SolicitudOcupacion() {
   const [guardado, setGuardado] = useState(Boolean(borradorInicial?.formulario));
   // Los archivos no se pueden guardar en localStorage, por eso viven fuera del borrador.
   const [adjuntos, setAdjuntos] = useState([]);
+  const [enviando, setEnviando] = useState(false);
+  const formularioRef = useRef(null);
+  // Se activa cuando el envío encuentra obligatorios vacíos: al mostrar ese paso se marcan los campos.
+  const marcarAlMostrarPaso = useRef(false);
+
+  useEffect(() => {
+    if (!marcarAlMostrarPaso.current || !formularioRef.current) return;
+    marcarAlMostrarPaso.current = false;
+    marcarCamposSoloEspacios(formularioRef.current);
+    formularioRef.current.reportValidity();
+  }, [currentStep]);
 
   useEffect(() => {
     if (!mostrarFormulario || solicitudRadicada) return undefined;
@@ -128,6 +165,7 @@ function SolicitudOcupacion() {
   };
 
   const validarSesion = (evento) => {
+    marcarCamposSoloEspacios(evento.currentTarget);
     if (!evento.currentTarget.checkValidity()) {
       evento.currentTarget.reportValidity();
       setError("Complete los campos obligatorios de esta sesión antes de continuar.");
@@ -153,14 +191,37 @@ function SolicitudOcupacion() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const enviarSolicitud = (evento) => {
+  // El backend asigna el radicado consecutivo y la fecha de envío; la solicitud queda para los analistas.
+  // Los archivos no viajan en este envío (el servicio solo recibe datos): se registran sus nombres.
+  const enviarSolicitud = async (evento) => {
     evento.preventDefault();
-    const solicitud = { radicado: generarRadicado(), formulario, adjuntos };
-    console.log("Solicitud de ocupación preparada:", solicitud);
-    eliminarBorrador();
-    setSolicitudRadicada(solicitud);
-    setMostrarFormulario(false);
-    window.scrollTo({ top: 0 });
+    if (enviando) return;
+
+    const faltantes = camposObligatoriosFaltantes(formulario);
+    if (faltantes.length > 0) {
+      const pasosIncompletos = new Set(faltantes.map((faltante) => faltante.paso));
+      setCompletedSteps((actuales) => actuales.filter((paso) => !pasosIncompletos.has(paso)));
+      marcarAlMostrarPaso.current = true;
+      irAPaso(faltantes[0].paso);
+      setError(`No se puede enviar la solicitud. Complete los campos obligatorios: ${faltantes.map((faltante) => `${faltante.etiqueta} (paso ${faltante.paso})`).join(", ")}.`);
+      return;
+    }
+
+    setEnviando(true);
+    setError("");
+    try {
+      const datos = { ...formulario, adjuntos: adjuntos.map((archivo) => ({ nombre: archivo.name, tamano: archivo.size, tipo: archivo.type })) };
+      const { radicado, fechaRegistro } = await radicarSolicitud("wizard", datos);
+      eliminarBorrador();
+      setSolicitudRadicada({ radicado, fechaEnvio: fechaRegistro, formulario, adjuntos });
+      setMostrarFormulario(false);
+      window.scrollTo({ top: 0 });
+    } catch (errorEnvio) {
+      console.error("No se pudo radicar la solicitud:", errorEnvio);
+      setError(mensajeErrorRadicado(errorEnvio));
+    } finally {
+      setEnviando(false);
+    }
   };
 
   const renderizarSesion = () => {
@@ -200,7 +261,7 @@ function SolicitudOcupacion() {
   }
 
   const esUltimoPaso = currentStep === ultimaSesion;
-  const textoContinuar = esUltimoPaso ? "Enviar solicitud" : currentStep === ultimaSesion - 1 ? "Revisar solicitud" : "Guardar y continuar";
+  const textoContinuar = esUltimoPaso ? (enviando ? "Enviando…" : "Enviar solicitud") : currentStep === ultimaSesion - 1 ? "Revisar solicitud" : "Guardar y continuar";
 
   return (
     <main className="pagina solicitud">
@@ -218,7 +279,7 @@ function SolicitudOcupacion() {
         </header>
 
         {/* noValidate: la validación la hace validarSesion para mostrar también el aviso del paso. */}
-        <form className="solicitud-formulario" onSubmit={esUltimoPaso ? enviarSolicitud : avanzar} noValidate>
+        <form ref={formularioRef} className="solicitud-formulario" onSubmit={esUltimoPaso ? enviarSolicitud : avanzar} noValidate>
           {currentStep === 1 && (
             <div id="indicacion-obligatorios" className="aviso aviso-info">
               <span aria-hidden="true" className="material-icons">info</span>
@@ -246,7 +307,7 @@ function SolicitudOcupacion() {
                 {currentStep > 1 && <span aria-hidden="true" className="material-icons">arrow_back</span>}
                 {currentStep === 1 ? "Cancelar" : "Anterior"}
               </button>
-              <button type="submit" className="boton boton-principal">
+              <button type="submit" className="boton boton-principal" disabled={enviando}>
                 {textoContinuar}
                 <span aria-hidden="true" className="material-icons">{esUltimoPaso ? "send" : "arrow_forward"}</span>
               </button>

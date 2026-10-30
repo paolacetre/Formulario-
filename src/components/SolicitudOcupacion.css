@@ -346,6 +346,9 @@
 .solicitud .confirmacion-radicado span { color: var(--s-info); font-size: 13px; font-weight: 400; letter-spacing: 1.4px; }
 .solicitud .confirmacion-radicado strong { color: var(--s-texto); font-family: inherit; font-size: 32px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0.08em; line-height: 1.2; }
 .solicitud .confirmacion-radicado small { color: var(--s-gris); font-size: 14px; }
+.solicitud .confirmacion-conservar { margin: -16px 0 20px; color: var(--s-gris); font-size: 14px; }
+.solicitud .confirmacion-contacto { max-width: 640px; margin: 0 auto 28px; text-align: left; }
+.solicitud .confirmacion-contacto a { color: var(--s-info); font-weight: 600; overflow-wrap: anywhere; }
 .solicitud .confirmacion-resumen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 32px; margin: 0 0 28px; padding: 24px 28px; border: 0; border-radius: var(--s-radio); background: var(--s-fondo); text-align: left; }
 .solicitud .confirmacion-resumen > div { min-width: 0; }
 .solicitud .confirmacion-resumen dt { margin-bottom: 4px; color: var(--s-texto); font-weight: 600; }
