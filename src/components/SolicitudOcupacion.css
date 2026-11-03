@@ -134,6 +134,10 @@
 .solicitud .descripcion-seleccion strong { display: block; margin-bottom: 4px; font-weight: 600; }
 .solicitud .descripcion-seleccion p { margin: 0; color: var(--s-texto); }
 .nota-campo { margin: 10px 0 0; color: var(--s-gris-claro); font-size: 14px; line-height: 1.4; }
+/* Descripción de cada campo, tomada del instructivo del Instrumento 3. */
+.solicitud .ayuda-campo { margin: 0; color: var(--s-gris); font-size: 14px; line-height: 1.45; }
+.solicitud .selector-buscable .ayuda-campo { margin: -2px 0 8px; }
+.solicitud .elementos-manuales .ayuda-manual { margin: -6px 0 12px; }
 
 /* ---------- Avisos ---------- */
 .solicitud .aviso { display: flex; align-items: flex-start; gap: 12px; margin: 0; padding: 14px 18px; border: 1px solid transparent; border-radius: var(--s-radio); line-height: 1.5; }
@@ -233,17 +237,27 @@
 /* ---------- Catálogos de la CNO: opciones, elementos agregados y creación manual ---------- */
 .solicitud .codigo-cno { display: inline-flex; flex: 0 0 auto; align-self: flex-start; padding: 2px 10px; border-radius: 999px; background: var(--s-info-fondo); color: var(--s-info); font-size: 13px; font-weight: 400; letter-spacing: 0.4px; white-space: nowrap; }
 .solicitud .codigo-manual { background: var(--s-alerta-fondo); color: var(--s-alerta); }
-.solicitud .opcion-catalogo-cabecera { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
-.solicitud .insignia-agregada { padding: 2px 10px; border-radius: 999px; background: var(--s-ok-fondo); color: var(--s-ok); font-size: 13px; font-weight: 400; }
-.solicitud .lista-catalogo > .aviso, .solicitud .elementos-manuales > .aviso { margin-top: 12px; }
+.solicitud .elementos-manuales > .aviso { margin-top: 12px; }
 
-.solicitud .lista-catalogo-agregados { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--s-borde); }
 .solicitud .lista-catalogo-subtitulo { margin: 0 0 12px; color: var(--s-texto); font-size: 16px; font-weight: 600; }
 
-.estado-vacio { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 28px 20px; border-radius: var(--s-radio); background: var(--s-fondo); color: var(--s-gris); text-align: center; }
-.estado-vacio strong { color: var(--s-texto); font-weight: 600; }
-.estado-vacio p { margin: 0; font-size: 14px; }
-.solicitud .estado-vacio-icono { display: grid; place-items: center; width: 56px; height: 56px; margin-bottom: 6px; border-radius: 50%; background: #fff; color: var(--s-gris-claro); font-size: 26px; }
+/* ---------- Casillas para escribir (funciones, denominaciones y ocupaciones relacionadas) ---------- */
+.solicitud .lista-casillas-columnas { display: flex; gap: 10px; margin: 0 46px 6px 38px; color: var(--s-gris); font-size: 14px; }
+.lista-casillas-columnas span { flex: 1; }
+.lista-casillas-columnas .corto { flex: 0 0 140px; }
+.solicitud .lista-casillas-filas { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.lista-casillas-fila { display: flex; align-items: flex-start; gap: 10px; }
+.lista-casillas-fila > .paso-circulo { margin-top: 8px; }
+.lista-casillas-fila > .boton-icono { margin-top: 4px; }
+.lista-casillas-contenido { flex: 1; min-width: 0; }
+.lista-casillas-campos { display: flex; gap: 10px; }
+.lista-casillas-campos > * { flex: 1; min-width: 0; }
+.solicitud .lista-casillas-campos input.corto { flex: 0 0 140px; }
+.solicitud .lista-casillas-campos textarea { min-height: 76px; }
+.solicitud .lista-casillas-aviso { margin: 6px 0 0; color: var(--s-alerta); font-size: 14px; }
+.solicitud .lista-casillas > .boton-crear-manual { margin-top: 14px; }
+.solicitud .boton-icono:disabled { background: transparent; color: var(--s-gris); cursor: default; opacity: 0.35; }
+
 
 .solicitud .tarjetas-elementos { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); align-items: start; gap: 12px; margin: 0; padding: 0; list-style: none; }
 .solicitud .elementos-manuales .tarjetas-elementos { margin-top: 14px; }
@@ -346,6 +360,9 @@
 .solicitud .confirmacion-radicado span { color: var(--s-info); font-size: 13px; font-weight: 400; letter-spacing: 1.4px; }
 .solicitud .confirmacion-radicado strong { color: var(--s-texto); font-family: inherit; font-size: 32px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0.08em; line-height: 1.2; }
 .solicitud .confirmacion-radicado small { color: var(--s-gris); font-size: 14px; }
+.solicitud .confirmacion-conservar { margin: -16px 0 20px; color: var(--s-gris); font-size: 14px; }
+.solicitud .confirmacion-contacto { max-width: 640px; margin: 0 auto 28px; text-align: left; }
+.solicitud .confirmacion-contacto a { color: var(--s-info); font-weight: 600; overflow-wrap: anywhere; }
 .solicitud .confirmacion-resumen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 32px; margin: 0 0 28px; padding: 24px 28px; border: 0; border-radius: var(--s-radio); background: var(--s-fondo); text-align: left; }
 .solicitud .confirmacion-resumen > div { min-width: 0; }
 .solicitud .confirmacion-resumen dt { margin-bottom: 4px; color: var(--s-texto); font-weight: 600; }
@@ -370,7 +387,8 @@
 
   .solicitud .tarjeta { padding: 18px 16px 20px; }
   .solicitud .tarjeta-encabezado { flex-wrap: wrap; gap: 12px; }
-  .solicitud .tarjeta-resumen { order: 3; }
+  .solicitud .tarjeta-encabezado-texto { flex-basis: calc(100% - 56px); }
+  .solicitud .tarjeta-resumen { order: 3; margin-left: 56px; }
   .solicitud .form-grid, .solicitud .revision-grupo dl, .solicitud .confirmacion-resumen { grid-template-columns: 1fr; }
   .solicitud .campo-completo, .solicitud .revision-grupo .revision-campo-completo, .solicitud .confirmacion-adjuntos { grid-column: auto; }
 
@@ -382,6 +400,9 @@
   .solicitud .formulario-manual-acciones { flex-direction: column-reverse; }
   .solicitud .formulario-manual-acciones .boton, .solicitud .boton-crear-manual { justify-content: center; width: 100%; }
   .solicitud .lista-adjuntos li { flex-wrap: wrap; }
+  .solicitud .lista-casillas-columnas { display: none; }
+  .lista-casillas-campos { flex-wrap: wrap; }
+  .solicitud .lista-casillas-campos input.corto { flex-basis: 100%; }
 
   .solicitud .tabla-catalogo thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
   .solicitud .tabla-catalogo tbody tr { display: grid; grid-template-columns: 40px minmax(0, 1fr); border-top: 1px solid var(--s-borde); }

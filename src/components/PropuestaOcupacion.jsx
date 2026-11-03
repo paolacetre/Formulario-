@@ -1,4 +1,5 @@
 import { AREAS_DESEMPENO, NIVELES_CUALIFICACION } from "../data/instrumento3.models";
+import { INSTRUCTIVO_INSTRUMENTO_3 as INSTRUCTIVO } from "../data/instructivoInstrumento3";
 import { OPCIONES_AREA, OPCIONES_NIVEL } from "../services/catalogosCno";
 import EncabezadoPaso from "./EncabezadoPaso";
 import SelectorBuscable from "./SelectorBuscable";
@@ -29,13 +30,15 @@ function PropuestaOcupacion({ formulario, manejarCambio, actualizarCampo }) {
               <label htmlFor="nombreOcupacion">
                 Nombre de la ocupación <span aria-hidden="true" className="obligatorio">*</span>
               </label>
-              <input id="nombreOcupacion" name="nombreOcupacion" type="text" value={formulario.nombreOcupacion} onChange={manejarCambio} placeholder="Ejemplo: Analista de datos" required />
+              <p id="nombreOcupacion-ayuda" className="ayuda-campo">{INSTRUCTIVO.nombreOcupacion}</p>
+              <input id="nombreOcupacion" name="nombreOcupacion" type="text" value={formulario.nombreOcupacion} onChange={manejarCambio} placeholder="Ejemplo: Analista de datos" aria-describedby="nombreOcupacion-ayuda" required />
             </div>
             <div className="campo campo-completo">
               <label htmlFor="descripcion">
                 Descripción de la ocupación <span aria-hidden="true" className="obligatorio">*</span>
               </label>
-              <textarea id="descripcion" name="descripcion" value={formulario.descripcion} onChange={manejarCambio} rows="4" placeholder="Describa el propósito y alcance de la ocupación" required />
+              <p id="descripcion-ayuda" className="ayuda-campo">{INSTRUCTIVO.descripcion}</p>
+              <textarea id="descripcion" name="descripcion" value={formulario.descripcion} onChange={manejarCambio} rows="4" placeholder="Describa el propósito y alcance de la ocupación" aria-describedby="descripcion-ayuda" required />
             </div>
           </div>
         </Tarjeta>
@@ -43,11 +46,11 @@ function PropuestaOcupacion({ formulario, manejarCambio, actualizarCampo }) {
         <Tarjeta id="tarjeta-clasificacion" icono="category" titulo="Información de clasificación" descripcion="Nivel de cualificación y área de desempeño según la Clasificación Nacional de Ocupaciones (CNO).">
           <div className="clasificacion-campos">
             <div className="campo">
-              <SelectorBuscable id="nivelCualificacion" etiqueta="Nivel de cualificación" icono="groups" opciones={OPCIONES_NIVEL} valor={formulario.nivelCualificacion} onCambiar={(valor) => actualizarCampo("nivelCualificacion", valor)} placeholder="Seleccione el nivel de cualificación" requerido />
+              <SelectorBuscable id="nivelCualificacion" etiqueta="Nivel de cualificación" icono="groups" opciones={OPCIONES_NIVEL} valor={formulario.nivelCualificacion} onCambiar={(valor) => actualizarCampo("nivelCualificacion", valor)} placeholder="Seleccione el nivel de cualificación" ayuda={INSTRUCTIVO.nivelCualificacion} requerido />
               <DescripcionSeleccion titulo={nivel && `${nivel.value} · ${nivel.label}`} descripcion={nivel?.descripcion} />
             </div>
             <div className="campo">
-              <SelectorBuscable id="areaDesempeno" etiqueta="Área de desempeño" icono="track_changes" opciones={OPCIONES_AREA} valor={formulario.areaDesempeno} onCambiar={(valor) => actualizarCampo("areaDesempeno", valor)} placeholder="Seleccione el área de desempeño" requerido />
+              <SelectorBuscable id="areaDesempeno" etiqueta="Área de desempeño" icono="track_changes" opciones={OPCIONES_AREA} valor={formulario.areaDesempeno} onCambiar={(valor) => actualizarCampo("areaDesempeno", valor)} placeholder="Seleccione el área de desempeño" ayuda={INSTRUCTIVO.areaDesempeno} requerido />
               <DescripcionSeleccion titulo={area && `${area.value} · ${area.label}`} descripcion={area?.descripcion} />
             </div>
           </div>
