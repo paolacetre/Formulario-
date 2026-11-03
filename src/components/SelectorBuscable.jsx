@@ -14,9 +14,10 @@ function contenidoPorDefecto(opcion) {
 // - textoTodas agrega una primera opción vacía (útil para filtros).
 // - maximoVisible limita las opciones dibujadas en catálogos grandes; el buscador recorre todas.
 // - renderOpcion y opcionDeshabilitada permiten personalizar cada opción.
+// - ayuda es la descripción del campo, que se muestra debajo de la etiqueta.
 function SelectorBuscable({
   id, etiqueta, icono, opciones, valor, onCambiar, textoTodas, placeholder = "Seleccione una opción",
-  requerido = false, deshabilitado = false, maximoVisible = Infinity, renderOpcion = contenidoPorDefecto, opcionDeshabilitada,
+  requerido = false, deshabilitado = false, maximoVisible = Infinity, renderOpcion = contenidoPorDefecto, opcionDeshabilitada, ayuda,
 }) {
   const [abierto, setAbierto] = useState(false);
   const [busqueda, setBusqueda] = useState("");
@@ -96,6 +97,7 @@ function SelectorBuscable({
         {etiqueta}
         {requerido && <span aria-hidden="true" className="obligatorio">*</span>}
       </label>
+      {ayuda && <p id={`${id}-ayuda`} className="ayuda-campo">{ayuda}</p>}
       <button
         id={id}
         ref={boton}
@@ -105,7 +107,7 @@ function SelectorBuscable({
         aria-expanded={abierto}
         aria-controls={abierto ? `${id}-lista` : undefined}
         aria-invalid={mostrarError || undefined}
-        aria-describedby={mostrarError ? `${id}-error` : undefined}
+        aria-describedby={[ayuda && `${id}-ayuda`, mostrarError && `${id}-error`].filter(Boolean).join(" ") || undefined}
         disabled={deshabilitado}
         onClick={() => (abierto ? setAbierto(false) : abrir())}
         onKeyDown={(evento) => {

@@ -31,6 +31,18 @@ function describirElementos(elementos) {
     : `${elemento.codigo} · ${elemento.nombre}`));
 }
 
+// Textos escritos en casillas (funciones, denominaciones), sin las vacías.
+function textosEscritos(textos) {
+  return textos.map((texto) => String(texto ?? "").trim()).filter(Boolean);
+}
+
+// "Cod Ocupación - Nombre Ocupación", como lo pide el Instrumento 3.
+function describirOcupaciones(ocupaciones) {
+  return ocupaciones
+    .map(({ codigo = "", nombre = "" }) => [codigo.trim(), nombre.trim()].filter(Boolean).join(" - "))
+    .filter(Boolean);
+}
+
 export function obtenerUbicacion(formulario) {
   const departamento = obtenerEtiqueta(DEPARTAMENTOS, formulario.departamento);
   const municipio = obtenerEtiqueta(MUNICIPIOS_POR_DEPARTAMENTO[formulario.departamento] || [], formulario.municipio);
@@ -63,9 +75,9 @@ export function obtenerSeccionesSolicitud(formulario) {
       ["Área de desempeño", obtenerEtiquetaConCodigo(AREAS_DESEMPENO, formulario.areaDesempeno)],
     ]],
     ["3. Funciones, denominaciones y ocupaciones relacionadas", [
-      ["Funciones", describirElementos(formulario.funciones), true, true],
-      ["Denominaciones", describirElementos(formulario.denominaciones), true, true],
-      ["Ocupaciones relacionadas", describirElementos(formulario.ocupacionesRelacionadas), true, true],
+      ["Funciones", textosEscritos(formulario.funciones), true, true],
+      ["Denominaciones", textosEscritos(formulario.denominaciones), true, true],
+      ["Ocupaciones relacionadas", describirOcupaciones(formulario.ocupacionesRelacionadas), true, true],
     ]],
     ["4. Habilidades", [
       ["Habilidades seleccionadas", describirCodigos(HABILIDADES_CATALOGO, formulario.habilidades), true, true],

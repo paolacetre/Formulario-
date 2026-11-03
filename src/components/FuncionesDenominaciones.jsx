@@ -1,64 +1,52 @@
-import { useEffect, useState } from "react";
-import { cargarCatalogosCno } from "../services/catalogosCno";
+import { INSTRUCTIVO_INSTRUMENTO_3 as INSTRUCTIVO } from "../data/instructivoInstrumento3";
 import EncabezadoPaso from "./EncabezadoPaso";
-import ListaCatalogo from "./ListaCatalogo";
+import ListaCasillas from "./ListaCasillas";
 import Tarjeta from "./Tarjeta";
 
+// funciones y denominaciones: textos; ocupacionesRelacionadas: [{ codigo, nombre }] ("Cod Ocupación - Nombre Ocupación").
 const secciones = [
   {
-    campo: "funciones", catalogo: "funciones", icono: "checklist", titulo: "Funciones", singular: "función", plural: "funciones",
-    descripcion: "Seleccione funciones del catálogo de la CNO o cree las que no estén en la lista.",
-    placeholder: "Seleccione una función",
-    camposManuales: [{ nombre: "nombre", etiqueta: "Descripción de la función", requerido: true, multilinea: true }],
+    campo: "funciones", icono: "checklist", titulo: "Funciones", descripcion: INSTRUCTIVO.funciones,
+    singular: "función", textoAgregar: "Agregar función", multilinea: true,
+    placeholder: "Ejemplo: Planear y supervisar las operaciones de cubierta y navegación del buque",
   },
   {
-    campo: "denominaciones", catalogo: "denominaciones", icono: "badge", titulo: "Denominaciones", singular: "denominación", plural: "denominaciones",
-    descripcion: "Cargos o nombres equivalentes con los que se conoce la ocupación.",
-    placeholder: "Seleccione una denominación",
-    camposManuales: [{ nombre: "nombre", etiqueta: "Nombre de la denominación", requerido: true }, { nombre: "descripcion", etiqueta: "Descripción", multilinea: true }],
+    campo: "denominaciones", icono: "badge", titulo: "Denominaciones", descripcion: INSTRUCTIVO.denominaciones,
+    singular: "denominación", textoAgregar: "Agregar denominación",
+    placeholder: "Ejemplo: Capitán de buque",
   },
   {
-    campo: "ocupacionesRelacionadas", catalogo: "ocupaciones", icono: "hub", titulo: "Ocupaciones relacionadas", singular: "ocupación", plural: "ocupaciones",
-    descripcion: "Ocupaciones de la CNO que tienen relación con la propuesta.",
-    placeholder: "Seleccione una ocupación",
-    camposManuales: [{ nombre: "nombre", etiqueta: "Nombre de la ocupación", requerido: true }, { nombre: "descripcion", etiqueta: "Descripción", multilinea: true }],
+    campo: "ocupacionesRelacionadas", icono: "hub", titulo: "Ocupaciones relacionadas", descripcion: INSTRUCTIVO.ocupacionesRelacionadas,
+    singular: "ocupación", textoAgregar: "Agregar ocupación",
+    campos: [
+      { clave: "codigo", etiqueta: "Código", placeholder: "Ej. 2274", corto: true },
+      { clave: "nombre", etiqueta: "Nombre de la ocupación", placeholder: "Ej. Oficiales de máquinas" },
+    ],
   },
 ];
 
+function cantidadEscrita(elementos) {
+  return elementos.filter((elemento) => (typeof elemento === "string" ? elemento : `${elemento.codigo ?? ""}${elemento.nombre ?? ""}`).trim()).length;
+}
+
 function FuncionesDenominaciones({ formulario, actualizarCampo }) {
-  const [catalogos, setCatalogos] = useState(null);
-  const [errorCarga, setErrorCarga] = useState(false);
-
-  useEffect(() => {
-    let vigente = true;
-    cargarCatalogosCno()
-      .then((datos) => { if (vigente) setCatalogos(datos); })
-      .catch((error) => {
-        console.error("No se pudo cargar el catálogo de la CNO:", error);
-        if (vigente) setErrorCarga(true);
-      });
-    return () => { vigente = false; };
-  }, []);
-
   return (
     <fieldset className="paso">
-      <EncabezadoPaso numero={3} descripcion="Seleccione registros del catálogo de la CNO o créelos manualmente. Cada uno se agrega al listado de su tarjeta." />
+      <EncabezadoPaso numero={3} descripcion="Escriba cada elemento en su propia casilla. Use el botón Agregar para sumar casillas y la papelera para quitarlas." />
       <div className="tarjetas">
         {secciones.map((seccion) => {
-          const cantidad = formulario[seccion.campo].length;
+          const cantidad = cantidadEscrita(formulario[seccion.campo]);
           return (
-            <Tarjeta key={seccion.campo} id={`tarjeta-${seccion.campo}`} icono={seccion.icono} titulo={seccion.titulo} descripcion={seccion.descripcion} resumen={`${cantidad} ${cantidad === 1 ? "agregada" : "agregadas"}`}>
-              <ListaCatalogo
+            <Tarjeta key={seccion.campo} id={`tarjeta-${seccion.campo}`} icono={seccion.icono} titulo={seccion.titulo} descripcion={seccion.descripcion} resumen={`${cantidad} ${cantidad === 1 ? "registrada" : "registradas"}`}>
+              <ListaCasillas
                 id={seccion.campo}
-                opciones={catalogos?.[seccion.catalogo]}
-                cargando={!catalogos && !errorCarga}
-                errorCarga={errorCarga}
-                seleccionados={formulario[seccion.campo]}
+                elementos={formulario[seccion.campo]}
                 onCambiar={(lista) => actualizarCampo(seccion.campo, lista)}
                 singular={seccion.singular}
-                plural={seccion.plural}
+                textoAgregar={seccion.textoAgregar}
                 placeholder={seccion.placeholder}
-                camposManuales={seccion.camposManuales}
+                multilinea={seccion.multilinea}
+                campos={seccion.campos}
               />
             </Tarjeta>
           );

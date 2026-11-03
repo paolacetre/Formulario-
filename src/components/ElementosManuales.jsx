@@ -5,7 +5,7 @@ import TarjetaElemento from "./TarjetaElemento";
 
 // Elementos creados manualmente junto a una tabla de catálogo (habilidades o conocimientos).
 // Si el nombre ya existe en el catálogo, se marca en la tabla en lugar de duplicarlo.
-function ElementosManuales({ id, singular, plural, femenino, catalogo, seleccionadosCatalogo, onSeleccionarCatalogo, manuales, onCambiar }) {
+function ElementosManuales({ id, singular, plural, femenino, catalogo, seleccionadosCatalogo, onSeleccionarCatalogo, manuales, onCambiar, ayuda }) {
   const [aviso, setAviso] = useState("");
   const ese = femenino ? "Esa" : "Ese";
   const agregado = femenino ? "agregada" : "agregado";
@@ -27,7 +27,8 @@ function ElementosManuales({ id, singular, plural, femenino, catalogo, seleccion
 
   return (
     <div className="elementos-manuales">
-      <p className="lista-catalogo-subtitulo">¿No está en la tabla? Agregue otr{femenino ? "as" : "os"} {plural}</p>
+      <p className="lista-catalogo-subtitulo">Otr{femenino ? "as" : "os"} {plural}</p>
+      {ayuda && <p className="ayuda-campo ayuda-manual">{ayuda}</p>}
       <FormularioManual
         id={id}
         textoBoton={`Agregar otr${femenino ? "a" : "o"} ${singular}`}

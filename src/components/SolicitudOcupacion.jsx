@@ -18,8 +18,9 @@ import "./SolicitudOcupacion.css";
 // Cambia cuando los catálogos de área, nivel, habilidades o conocimientos cambian de origen.
 const VERSION_CATALOGO = "CNO 2026";
 
-// funciones, denominaciones, ocupacionesRelacionadas, habilidadesManuales y conocimientosManuales:
-// [{ codigo, nombre, descripcion, ocupacion, manual }]. habilidades y conocimientos: códigos del catálogo.
+// funciones y denominaciones: textos (uno por casilla). ocupacionesRelacionadas: [{ codigo, nombre }].
+// habilidadesManuales y conocimientosManuales: [{ codigo, nombre, descripcion, ocupacion, manual }].
+// habilidades y conocimientos: códigos del catálogo.
 const formularioInicial = {
   versionCatalogo: VERSION_CATALOGO,
   fecha: new Date().toISOString().slice(0, 10), nombreApellidos: "", documentoIdentidad: "", email: "", telefono: "",
@@ -80,10 +81,35 @@ function manualesDesdeTexto(texto) {
     .map((nombre) => ({ codigo: "", nombre, descripcion: "", ocupacion: null, manual: true }));
 }
 
+// Las versiones anteriores guardaban funciones y denominaciones como objetos del catálogo.
+function listaDeTextos(valor) {
+  return (Array.isArray(valor) ? valor : [])
+    .map((elemento) => (typeof elemento === "string" ? elemento : elemento?.nombre ?? elemento?.texto ?? ""))
+    .filter((texto) => typeof texto === "string");
+}
+
+function listaDeOcupaciones(valor) {
+  return (Array.isArray(valor) ? valor : [])
+    .filter((elemento) => elemento && (typeof elemento === "string" || typeof (elemento.nombre ?? elemento.texto) === "string" || typeof elemento.codigo === "string"))
+    .map((elemento) => (typeof elemento === "string" ? { codigo: "", nombre: elemento } : { codigo: elemento.codigo ?? "", nombre: elemento.nombre ?? elemento.texto ?? "" }));
+}
+
+// Al enviar se descartan las casillas vacías.
+function sinCasillasVacias(formulario) {
+  return {
+    ...formulario,
+    funciones: formulario.funciones.map((texto) => texto.trim()).filter(Boolean),
+    denominaciones: formulario.denominaciones.map((texto) => texto.trim()).filter(Boolean),
+    ocupacionesRelacionadas: formulario.ocupacionesRelacionadas
+      .map(({ codigo, nombre }) => ({ codigo: codigo.trim(), nombre: nombre.trim() }))
+      .filter(({ codigo, nombre }) => codigo || nombre),
+  };
+}
+
 function combinarFormulario(guardado) {
   const { funcionesDenominaciones, otrasHabilidades, otrosConocimientos, ...resto } = guardado;
   const mismaVersion = guardado.versionCatalogo === VERSION_CATALOGO;
-  const funciones = listaDeElementos(guardado.funciones);
+  const funciones = listaDeTextos(guardado.funciones);
 
   return {
     ...formularioInicial,
@@ -95,9 +121,9 @@ function combinarFormulario(guardado) {
     areaDesempeno: mismaVersion ? guardado.areaDesempeno || "" : "",
     nivelCualificacion: mismaVersion ? guardado.nivelCualificacion || "" : "",
     // El campo abierto anterior se conserva como una función registrada manualmente.
-    funciones: funciones.length > 0 || !funcionesDenominaciones?.trim() ? funciones : [{ codigo: "", nombre: funcionesDenominaciones.trim(), descripcion: "", ocupacion: null, manual: true }],
-    denominaciones: listaDeElementos(guardado.denominaciones),
-    ocupacionesRelacionadas: listaDeElementos(guardado.ocupacionesRelacionadas),
+    funciones: funciones.length > 0 || !funcionesDenominaciones?.trim() ? funciones : [funcionesDenominaciones.trim()],
+    denominaciones: listaDeTextos(guardado.denominaciones),
+    ocupacionesRelacionadas: listaDeOcupaciones(guardado.ocupacionesRelacionadas),
     habilidades: codigosDelCatalogo(HABILIDADES_CATALOGO, guardado.habilidades),
     conocimientos: codigosDelCatalogo(CONOCIMIENTOS_CATALOGO, guardado.conocimientos),
     habilidadesManuales: [...listaDeElementos(guardado.habilidadesManuales), ...manualesDesdeTexto(otrasHabilidades)],
@@ -210,10 +236,11 @@ function SolicitudOcupacion() {
     setEnviando(true);
     setError("");
     try {
-      const datos = { ...formulario, adjuntos: adjuntos.map((archivo) => ({ nombre: archivo.name, tamano: archivo.size, tipo: archivo.type })) };
+      const formularioLimpio = sinCasillasVacias(formulario);
+      const datos = { ...formularioLimpio, adjuntos: adjuntos.map((archivo) => ({ nombre: archivo.name, tamano: archivo.size, tipo: archivo.type })) };
       const { radicado, fechaRegistro } = await radicarSolicitud("wizard", datos);
       eliminarBorrador();
-      setSolicitudRadicada({ radicado, fechaEnvio: fechaRegistro, formulario, adjuntos });
+      setSolicitudRadicada({ radicado, fechaEnvio: fechaRegistro, formulario: formularioLimpio, adjuntos });
       setMostrarFormulario(false);
       window.scrollTo({ top: 0 });
     } catch (errorEnvio) {

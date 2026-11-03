@@ -14,7 +14,8 @@ Este documento resume únicamente lo que corresponde a los dos formularios del p
 - `src/components/DatosGenerales.jsx`
 - `src/components/PropuestaOcupacion.jsx`
 - `src/components/FuncionesDenominaciones.jsx` (tarjetas de funciones, denominaciones y ocupaciones relacionadas)
-- `src/components/ListaCatalogo.jsx` (lista desplegable con buscador del catálogo CNO + creación manual + listado de tarjetas)
+- `src/components/ListaCasillas.jsx` (casillas para escribir un elemento por casilla, con "+ Agregar", papelera y aviso de repetidos)
+- `src/data/instructivoInstrumento3.js` (descripción de cada campo, tomada del Instrumento 3)
 - `src/components/TarjetaElemento.jsx` (tarjeta de cada elemento agregado: código, nombre, descripción y ocupación asociada)
 - `src/components/FormularioManual.jsx` (formulario en línea para crear elementos que no están en el catálogo)
 - `src/components/ElementosManuales.jsx` (opción "Agregar otra habilidad/otro conocimiento" debajo de las tablas)
@@ -37,14 +38,14 @@ Este documento resume únicamente lo que corresponde a los dos formularios del p
 - `src/services/solicitudesService.js` (envío al backend, fecha de envío y correo de contacto)
 - `.env` y `.env.development` (correo de contacto `VITE_CORREO_CONTACTO`, modo de radicación `VITE_MODO_SOLICITUDES` y URL del backend `VITE_API_URL`)
 - `src/data/instrumento3.models.js` (área de desempeño, nivel de cualificación, habilidades y conocimientos de la CNO 2026)
-- `src/services/catalogosCno.js` (carga diferida y búsqueda de las listas de la CNO)
-- `src/data/cno/funciones.json`, `denominaciones.json` y `ocupaciones.json` (registros activos de la CNO 2026)
+- `src/services/catalogosCno.js` (normalización de texto y opciones de nivel y área)
 
 ### Qué hace este formulario
 - Registra datos generales del solicitante.
 - Solicita la propuesta de una nueva ocupación.
 - Tiene 7 pasos por sesión organizados en tarjetas: datos generales; propuesta (nombre, descripción, nivel de cualificación y después área de desempeño, ambos con su descripción); funciones/denominaciones/ocupaciones relacionadas; habilidades; conocimientos; justificación con documentos adjuntos y revisión final.
-- Funciones, denominaciones y ocupaciones relacionadas tienen cada una su tarjeta con una lista desplegable con buscador (código, nombre y descripción u ocupación asociada). Al elegir una opción se agrega al listado como tarjeta; cada sección permite crear elementos manualmente. Se guardan como `{ codigo, nombre, descripcion, ocupacion, manual }`.
+- Funciones, denominaciones y ocupaciones relacionadas se escriben en casillas, una por elemento, como pide el Instrumento 3 ("Escriba una función por cada casilla"). Las ocupaciones relacionadas llevan código y nombre ("Cod Ocupación - Nombre Ocupación"). Se guardan como textos (funciones, denominaciones) y `{ codigo, nombre }` (ocupaciones); al enviar se descartan las casillas vacías.
+- Cada campo muestra debajo de su etiqueta la descripción del Instrumento 3 (`instructivoInstrumento3.js`).
 - Habilidades (41) y conocimientos (78) se seleccionan desde una tabla con código, nombre y descripción (`HABILIDADES_CATALOGO` y `CONOCIMIENTOS_CATALOGO`) y se guardan por código. Debajo de cada tabla se pueden agregar otras (`habilidadesManuales`, `conocimientosManuales`).
 - Guarda borrador en `localStorage`.
 - Radicación con `VITE_MODO_SOLICITUDES`: `mock` (actual, sin base de datos) la simula en el navegador con el mismo contrato y la guarda en `localStorage` (`clasificacion-solicitudes-ocupacion`, con `estado: "RADICADA"` y `rolDestino: "ANALISTA"`); `api` la envía al backend.
@@ -62,7 +63,7 @@ Este documento resume únicamente lo que corresponde a los dos formularios del p
 - `guardarBorrador` / `obtenerBorrador` debe reemplazarse por backend o servicio real.
 - El servicio de solicitudes solo recibe datos: de los archivos adjuntos se envían el nombre, el tamaño y el tipo. Para guardar los archivos el backend necesita un endpoint de carga.
 - Los valores de departamentos, municipios y sectores deben conectarse con datos reales.
-- Los datos de `src/data/cno/` y de `instrumento3.models.js` se generaron desde `CNO_2026_10-09Actualizado (2).xlsx` (igual a `back/database/siembra/cno.xlsx`). Como ese libro corta textos en 255 caracteres, las descripciones de las áreas se tomaron completas del `Instrumento 3` (hoja Codecs) y las de algunas habilidades, conocimientos y la habilidad 19 y 30 de `2CNO_2024_(2025-06-13).xlsx`. En producción deben consultarse en la API del backend (`cno_funcion`, `cno_denominacion`, `cno_ocupacion`, `habilidad_destreza`, `cno_conocimiento`, `cno_area_desempeno`, `cno_nivel_cualificacion`).
+- Los datos de `instrumento3.models.js` se generaron desde `CNO_2026_10-09Actualizado (2).xlsx` (igual a `back/database/siembra/cno.xlsx`). Como ese libro corta textos en 255 caracteres, las descripciones de las áreas se tomaron completas del `Instrumento 3` (hoja Codecs) y las de algunas habilidades, conocimientos y la habilidad 19 y 30 de `2CNO_2024_(2025-06-13).xlsx`. En producción deben consultarse en la API del backend (`habilidad_destreza`, `cno_conocimiento`, `cno_area_desempeno`, `cno_nivel_cualificacion`).
 
 ---
 
@@ -108,7 +109,7 @@ src/
 │   ├── PropuestaOcupacion.jsx
 │   ├── FuncionesDenominaciones.jsx
 │   ├── Tarjeta.jsx
-│   ├── ListaCatalogo.jsx
+│   ├── ListaCasillas.jsx
 │   ├── TarjetaElemento.jsx
 │   ├── FormularioManual.jsx
 │   ├── ElementosManuales.jsx

@@ -1,4 +1,5 @@
 import { CONOCIMIENTOS_CATALOGO } from "../data/instrumento3.models";
+import { INSTRUCTIVO_INSTRUMENTO_3 as INSTRUCTIVO } from "../data/instructivoInstrumento3";
 import ElementosManuales from "./ElementosManuales";
 import EncabezadoPaso from "./EncabezadoPaso";
 import TablaCatalogo from "./TablaCatalogo";
@@ -10,12 +11,13 @@ function Conocimientos({ formulario, alternarCatalogo, actualizarCampo }) {
     <fieldset className="paso">
       <EncabezadoPaso numero={5} descripcion="Seleccione en la tabla los conocimientos necesarios para la ocupación. Si falta alguno, agréguelo al final." />
       <div className="tarjetas">
-        <Tarjeta id="tarjeta-conocimientos" icono="school" titulo="Conocimientos" descripcion="Catálogo completo de conocimientos de la CNO con su código y descripción." resumen={`${total} en total`}>
+        <Tarjeta id="tarjeta-conocimientos" icono="school" titulo="Conocimientos" descripcion={INSTRUCTIVO.conocimientos} resumen={`${total} en total`}>
           <TablaCatalogo id="conocimientos" titulo="Catálogo de conocimientos" columna="Conocimiento" catalogo={CONOCIMIENTOS_CATALOGO} seleccionados={formulario.conocimientos} onAlternar={(codigo) => alternarCatalogo("conocimientos", codigo)} textoSeleccion="seleccionados" />
           <ElementosManuales
             id="conocimientosManuales"
             singular="conocimiento"
             plural="conocimientos"
+            ayuda={INSTRUCTIVO.otrosConocimientos}
             catalogo={CONOCIMIENTOS_CATALOGO}
             seleccionadosCatalogo={formulario.conocimientos}
             onSeleccionarCatalogo={(codigo) => alternarCatalogo("conocimientos", codigo)}
