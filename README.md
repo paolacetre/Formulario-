@@ -9,7 +9,6 @@ El sistema permite:
 - Consultar ocupaciones por nombre o codigo.
 - Ver el detalle de una ocupacion en secciones de informacion general, funciones, habilidades, conocimientos, denominaciones y relaciones.
 - Diligenciar una solicitud para crear una nueva ocupacion.
-- Diligenciar un formulario alterno para ajustes o inclusion de ocupaciones.
 - Cargar archivos Excel de ocupaciones desde el area administrativa.
 - Validar y publicar un catalogo de ocupaciones.
 - Consultar el historial de versiones del catalogo.
@@ -85,7 +84,6 @@ npm run preview
 | `/` | Pagina de inicio y accesos principales. |
 | `/buscar` | Buscador y consulta publica de ocupaciones. |
 | `/formulario` | Solicitud de creacion de una nueva ocupacion. |
-| `/formulario-alterno` | Formulario alterno para ajustes o inclusion de ocupaciones. |
 | `/admin` | Carga, validacion y publicacion del catalogo Excel. |
 
 ## Estructura principal
@@ -109,7 +107,6 @@ formulario-ocupacion/
 │   ├── views/
 │   │   ├── AdminOcupaciones.jsx
 │   │   ├── BuscarOcupacion.jsx
-│   │   ├── FormularioAlterno.jsx
 │   │   ├── FormularioOcupacion.jsx
 │   │   └── Inicio.jsx
 │   ├── App.css
