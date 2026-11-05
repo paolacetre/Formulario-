@@ -50,7 +50,7 @@ async function radicarEnMock(tipo, datos) {
   return { radicado, fechaRegistro };
 }
 
-// tipo: "wizard" (formulario por pasos) o "alterno". Devuelve { radicado, fechaRegistro }.
+// tipo: "wizard" (formulario de solicitud por pasos). Devuelve { radicado, fechaRegistro }.
 export function radicarSolicitud(tipo, datos) {
   return MODO === "api" ? radicarEnApi(tipo, datos) : radicarEnMock(tipo, datos);
 }

@@ -1,6 +1,6 @@
-# Integración de los dos formularios al proyecto real
+# Integración del formulario de solicitud al proyecto real
 
-Este documento resume únicamente lo que corresponde a los dos formularios del proyecto y qué carpetas/archivos deben copiarse al proyecto institucional real.
+Este documento resume únicamente lo que corresponde al formulario de solicitud de creación de ocupación (Instrumento 3) y qué carpetas/archivos deben copiarse al proyecto institucional real.
 
 ## 1) Formulario principal: creación de nueva ocupación
 
@@ -67,93 +67,60 @@ Este documento resume únicamente lo que corresponde a los dos formularios del p
 
 ---
 
-## 2) Formulario alterno: ajuste o inclusión de nueva ocupación
+## 2) Carpetas a copiar al proyecto real
 
-### Ruta principal
-- `src/views/FormularioAlterno.jsx`
-
-### Datos de apoyo
-- `src/data/ocupacionesMock.js`
-
-### Qué hace este formulario
-- Solicita información del solicitante.
-- Permite elegir tipo de solicitud: `Ajuste` o `Inclusión de nueva ocupación`.
-- Si es ajuste, permite buscar la ocupación base por código o por término en dos buscadores: uno para CNO y otro para CUOC (usa `buscarOcupaciones` del catálogo activo).
-- Genera secciones dinámicas para evaluar aspectos como ocupación, descripción, denominaciones, conocimientos, destrezas, nivel y equivalencias.
-- Tiene validación obligatoria antes de guardar la solicitud.
-- Permite anexar archivo, observaciones y seguimiento de la solicitud.
-
-### Qué se debe copiar
-- La vista `FormularioAlterno` completa.
-- La estructura de datos inicial del formulario.
-- Los componentes internos definidos dentro del mismo archivo: `Campo`, `Check`, `Seccion`, `BuscadorOcupacion`.
-- El servicio `src/services/ocupacionesService.js` (búsqueda CNO/CUOC).
-- La data mock de ocupaciones para pruebas en entorno local: `ocupacionesMock.js`.
-
-### Qué debe cambiarse en producción
-- Reemplazar `ocupacionesMock.js` por un servicio o API real.
-- Reemplazar la validación local por reglas institucionales reales.
-- Reemplazar la acción de guardar por el endpoint final.
-- Sustituir la referencia a PDFs locales (`/referencias/...pdf`) por archivos reales o una fuente institucional.
-
----
-
-## 3) Carpetas a copiar al proyecto real
-
-### Mínimo recomendado para los formularios
+### Mínimo recomendado para el formulario
 ```text
 src/
 ├── components/
 │   ├── SolicitudOcupacion.jsx
+│   ├── SolicitudOcupacion.css
+│   ├── pasosSolicitud.js
+│   ├── ProgresoFormulario.jsx
+│   ├── EncabezadoPaso.jsx
+│   ├── Tarjeta.jsx
 │   ├── DatosGenerales.jsx
 │   ├── PropuestaOcupacion.jsx
-│   ├── FuncionesDenominaciones.jsx
-│   ├── Tarjeta.jsx
-│   ├── ListaCasillas.jsx
-│   ├── TarjetaElemento.jsx
-│   ├── FormularioManual.jsx
-│   ├── ElementosManuales.jsx
 │   ├── SelectorBuscable.jsx
-│   ├── TablaCatalogo.jsx
+│   ├── FuncionesDenominaciones.jsx
+│   ├── ListaCasillas.jsx
 │   ├── Habilidades.jsx
 │   ├── Conocimientos.jsx
+│   ├── TablaCatalogo.jsx
+│   ├── ElementosManuales.jsx
+│   ├── FormularioManual.jsx
+│   ├── TarjetaElemento.jsx
 │   ├── Justificacion.jsx
-│   ├── RevisionSolicitud.jsx
 │   ├── ListaAdjuntos.jsx
-│   ├── ConfirmacionSolicitud.jsx
-│   ├── ProgresoFormulario.jsx
-│   └── FormularioAlterno.jsx   # si se decide moverlo igual dentro de components, pero en este proyecto vive en views
+│   ├── RevisionSolicitud.jsx
+│   └── ConfirmacionSolicitud.jsx
 ├── views/
-│   ├── FormularioOcupacion.jsx
-│   └── FormularioAlterno.jsx
+│   └── FormularioOcupacion.jsx
 ├── services/
 │   ├── formularioStorage.js
 │   ├── fichaSolicitud.js
-│   ├── catalogosCno.js
-│   └── ocupacionesService.js   # solo si se integra búsqueda/consulta de ocupaciones
+│   ├── solicitudesService.js
+│   └── catalogosCno.js
 ├── data/
 │   ├── instrumento3.models.js
-│   ├── cno/                   # funciones.json, denominaciones.json, ocupaciones.json
-│   └── ocupacionesMock.js
+│   └── instructivoInstrumento3.js
 └── App.jsx
 ```
 
 ### Importante
-No se debe copiar todo el proyecto completo. Solo es necesario llevar la parte funcional de ambos flujos y luego conectarla con el backend institucional.
+No se debe copiar todo el proyecto completo. Solo es necesario llevar la parte funcional del formulario y luego conectarla con el backend institucional.
 
 ---
 
-## 4) Archivos de navegación y estilos que normalmente se integran
+## 3) Archivos de navegación y estilos que normalmente se integran
 
 ### Rutas principales
 - `src/App.jsx`
 
 Esto incluye:
 - Importación de `FormularioOcupacion`.
-- Importación de `FormularioAlterno`.
 - Rutas:
   - `/formulario`
-  - `/formulario-alterno`
 
 ### Estilos generales
 - `src/App.css`
@@ -163,7 +130,7 @@ Estos estilos son necesarios si el proyecto institucional no tiene un sistema vi
 
 ---
 
-## 5) Qué no copiar como está en producción
+## 4) Qué no copiar como está en producción
 
 - `src/data/ocupacionesMock.js` como fuente oficial de datos.
 - `localStorage` como persistencia definitiva.
@@ -173,10 +140,10 @@ Estos estilos son necesarios si el proyecto institucional no tiene un sistema vi
 
 ---
 
-## 6) Recomendación de integración real
+## 5) Recomendación de integración real
 
 1. Copiar solo la estructura del formulario y sus componentes.
-2. Conectar cada formulario a un servicio real del backend.
+2. Conectar el formulario al servicio real del backend (`VITE_MODO_SOLICITUDES=api`).
 3. Reemplazar `localStorage` por persistencia institucional.
 4. Sustituir `ocupacionesMock.js` por una API o datos reales.
 5. Mantener la lógica de validación pero alinearla con el negocio real.
@@ -184,9 +151,9 @@ Estos estilos son necesarios si el proyecto institucional no tiene un sistema vi
 
 ---
 
-## 7) Resumen práctico
+## 6) Resumen práctico
 
-Si la intención es llevar estos formularios al proyecto real, lo más importante es copiar:
+Si la intención es llevar este formulario al proyecto real, lo más importante es copiar:
 
 - `src/views/FormularioOcupacion.jsx`
 - `src/components/SolicitudOcupacion.jsx`
@@ -195,8 +162,7 @@ Si la intención es llevar estos formularios al proyecto real, lo más important
 - `src/services/fichaSolicitud.js` (etiquetas y secciones del resumen de revisión)
 - `src/services/solicitudesService.js` (envío al backend, fecha de envío y correo de contacto)
 - `.env` y `.env.development` (correo de contacto `VITE_CORREO_CONTACTO`, modo de radicación `VITE_MODO_SOLICITUDES` y URL del backend `VITE_API_URL`)
-- `src/views/FormularioAlterno.jsx`
-- `src/data/ocupacionesMock.js` solo como dato de prueba local
+- `src/data/instrumento3.models.js` y `src/data/instructivoInstrumento3.js`
 - `src/App.jsx` para las rutas
 - `src/App.css` y `src/index.css` solo si hace falta estilo
 
