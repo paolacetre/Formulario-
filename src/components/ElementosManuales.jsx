@@ -35,7 +35,7 @@ function ElementosManuales({ id, singular, plural, femenino, catalogo, seleccion
         campos={[{ nombre: "nombre", etiqueta: `Nombre de${femenino ? " la" : "l"} ${singular}`, requerido: true }, { nombre: "descripcion", etiqueta: "Descripción", multilinea: true }]}
         onAgregar={agregar}
       />
-      {aviso && <p className="aviso aviso-info" role="status"><span aria-hidden="true" className="material-icons">info</span>{aviso}</p>}
+      {aviso && <p className="aviso aviso-exito" role="status"><span aria-hidden="true" className="material-icons-round">check_circle</span>{aviso}</p>}
       {manuales.length > 0 && (
         <ul className="tarjetas-elementos" aria-label={`Otr${femenino ? "as" : "os"} ${plural} ${femenino ? "agregadas" : "agregados"}`}>
           {manuales.map((elemento, indice) => (

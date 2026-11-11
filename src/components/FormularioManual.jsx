@@ -32,7 +32,7 @@ function FormularioManual({ id, textoBoton, campos, onAgregar }) {
   if (!abierto) {
     return (
       <button type="button" className="boton-crear-manual" onClick={() => setAbierto(true)}>
-        <span aria-hidden="true" className="material-icons">add</span>
+        <span aria-hidden="true" className="material-icons-round">add</span>
         {textoBoton}
       </button>
     );

@@ -8,7 +8,7 @@ import Tarjeta from "./Tarjeta";
 function Conocimientos({ formulario, alternarCatalogo, actualizarCampo }) {
   const total = formulario.conocimientos.length + formulario.conocimientosManuales.length;
   return (
-    <fieldset className="paso">
+    <fieldset className="paso" tabIndex={-1}>
       <EncabezadoPaso numero={5} descripcion="Seleccione en la tabla los conocimientos necesarios para la ocupación. Si falta alguno, agréguelo al final." />
       <div className="tarjetas">
         <Tarjeta id="tarjeta-conocimientos" icono="school" titulo="Conocimientos" descripcion={INSTRUCTIVO.conocimientos} resumen={`${total} en total`}>

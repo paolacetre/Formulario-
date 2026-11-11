@@ -31,7 +31,7 @@ function cantidadEscrita(elementos) {
 
 function FuncionesDenominaciones({ formulario, actualizarCampo }) {
   return (
-    <fieldset className="paso">
+    <fieldset className="paso" tabIndex={-1}>
       <EncabezadoPaso numero={3} descripcion="Escriba cada elemento en su propia casilla. Use el botón Agregar para sumar casillas y la papelera para quitarlas." />
       <div className="tarjetas">
         {secciones.map((seccion) => {
