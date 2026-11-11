@@ -5,6 +5,7 @@ import { mensajeErrorRadicado, radicarSolicitud } from "../services/solicitudesS
 import { eliminarBorrador, guardarBorrador, obtenerBorrador } from "../services/formularioStorage";
 import ConfirmacionSolicitud from "./ConfirmacionSolicitud";
 import DatosGenerales from "./DatosGenerales";
+import DialogoConfirmacion from "./DialogoConfirmacion";
 import PropuestaOcupacion from "./PropuestaOcupacion";
 import FuncionesDenominaciones from "./FuncionesDenominaciones";
 import Habilidades from "./Habilidades";
@@ -56,6 +57,19 @@ function marcarCamposSoloEspacios(formularioDom) {
   formularioDom.querySelectorAll("input[required], textarea[required]").forEach((campo) => {
     campo.setCustomValidity(campo.value !== "" && campo.value.trim() === "" ? "Este campo no puede quedar solo con espacios." : "");
   });
+}
+
+// true si hay algo escrito o elegido (casillas vacías y valores de solo espacios no cuentan).
+function tieneContenido(valor) {
+  if (Array.isArray(valor)) return valor.some(tieneContenido);
+  if (valor && typeof valor === "object") return Object.values(valor).some(tieneContenido);
+  if (typeof valor === "boolean") return false;
+  return String(valor ?? "").trim() !== "";
+}
+
+// La fecha y la versión del catálogo se llenan solas: no cuentan como información diligenciada.
+function hayInformacionDiligenciada(formulario, adjuntos) {
+  return adjuntos.length > 0 || Object.entries(formulario).some(([clave, valor]) => clave !== "fecha" && clave !== "versionCatalogo" && tieneContenido(valor));
 }
 
 function esBorradorAnterior(borrador) {
@@ -147,6 +161,7 @@ function SolicitudOcupacion() {
   // Los archivos no se pueden guardar en localStorage, por eso viven fuera del borrador.
   const [adjuntos, setAdjuntos] = useState([]);
   const [enviando, setEnviando] = useState(false);
+  const [confirmarCancelacion, setConfirmarCancelacion] = useState(false);
   const formularioRef = useRef(null);
   // Se activa cuando el envío encuentra obligatorios vacíos: al mostrar ese paso se marcan los campos.
   const marcarAlMostrarPaso = useRef(false);
@@ -227,6 +242,26 @@ function SolicitudOcupacion() {
     setError("");
     const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     window.scrollTo({ top: 0, behavior: sinMovimiento ? "auto" : "smooth" });
+  };
+
+  // Cancelar descarta la solicitud: al volver a comenzar, el formulario arranca vacío desde el paso 1.
+  const descartarSolicitud = () => {
+    eliminarBorrador();
+    setConfirmarCancelacion(false);
+    setFormulario({ ...formularioInicial, fecha: new Date().toISOString().slice(0, 10) });
+    setCurrentStep(1);
+    setCompletedSteps([]);
+    setAdjuntos([]);
+    setError("");
+    setGuardado(false);
+    setMostrarFormulario(false);
+    window.scrollTo({ top: 0 });
+  };
+
+  // Si ya hay información, se pide confirmación antes de borrarla.
+  const cancelar = () => {
+    if (hayInformacionDiligenciada(formulario, adjuntos)) setConfirmarCancelacion(true);
+    else descartarSolicitud();
   };
 
   // El backend asigna el radicado consecutivo y la fecha de envío; la solicitud queda para los analistas.
@@ -342,7 +377,7 @@ function SolicitudOcupacion() {
               )}
             </p>
             <div className="solicitud-acciones-botones">
-              <button type="button" className="boton boton-secundario" onClick={() => (currentStep === 1 ? setMostrarFormulario(false) : irAPaso(currentStep - 1))}>
+              <button type="button" className="boton boton-secundario" onClick={() => (currentStep === 1 ? cancelar() : irAPaso(currentStep - 1))}>
                 {currentStep > 1 && <span aria-hidden="true" className="material-icons-round">arrow_back</span>}
                 {currentStep === 1 ? "Cancelar" : "Anterior"}
               </button>
@@ -354,6 +389,17 @@ function SolicitudOcupacion() {
           </div>
         </form>
       </div>
+
+      <DialogoConfirmacion
+        id="dialogo-cancelar"
+        abierto={confirmarCancelacion}
+        titulo="¿Cancelar la solicitud?"
+        texto="Se borrará toda la información diligenciada y los archivos adjuntos. Esta acción no se puede deshacer."
+        textoCancelar="Seguir diligenciando"
+        textoConfirmar="Sí, cancelar y borrar"
+        onConfirmar={descartarSolicitud}
+        onCerrar={() => setConfirmarCancelacion(false)}
+      />
     </main>
   );
 }

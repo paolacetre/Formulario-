@@ -476,3 +476,18 @@
 @media (prefers-reduced-motion: reduce) {
   .solicitud *, .solicitud *::before, .solicitud *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- Diálogo de confirmación ---------- */
+.solicitud .dialogo { width: min(100% - 32px, 500px); padding: 28px; border: 0; border-radius: var(--s-radio); background: #fff; color: var(--s-texto); box-shadow: 0 24px 60px rgba(0, 22, 49, 0.25); text-align: center; }
+.solicitud .dialogo::backdrop { background: rgba(0, 22, 49, 0.45); }
+.solicitud .dialogo h2 { margin: 0 0 8px; font-size: 20px; font-weight: 600; line-height: 1.3; }
+.solicitud .dialogo p { margin: 0 0 24px; color: var(--s-gris); line-height: 1.5; }
+.solicitud .dialogo-icono { display: grid; place-items: center; width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 50%; background: var(--s-alerta-fondo); color: var(--s-alerta); font-size: 28px; }
+.solicitud .dialogo-acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+/* Acción destructiva: rojo de rechazo en su tono de texto, que con blanco cumple contraste AA (6:1). */
+.solicitud .boton-peligro { background: var(--s-error-texto); color: #fff; }
+.solicitud .boton-peligro:hover:not(:disabled) { background: #a30f0f; }
+@media (max-width: 760px) {
+  .solicitud .dialogo { padding: 24px 18px; }
+  .solicitud .dialogo-acciones .boton { flex: 1 1 100%; }
+}
