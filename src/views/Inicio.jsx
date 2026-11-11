@@ -5,7 +5,7 @@ function Inicio() {
     <main className="pagina">
       <section className="inicio-card">
         <div className="inicio-contenido">
-          <span className="etiqueta">CATALOGO DE OCUPACIONES</span>
+          <span className="etiqueta">CATÁLOGO DE OCUPACIONES</span>
           <h1>Consulta y gestión de ocupaciones laborales</h1>
           <p>
             Consulte información de ocupaciones CNO y CUOC o solicite la
