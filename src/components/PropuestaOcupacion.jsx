@@ -1,6 +1,7 @@
 import { AREAS_DESEMPENO, NIVELES_CUALIFICACION } from "../data/instrumento3.models";
 import { INSTRUCTIVO_INSTRUMENTO_3 as INSTRUCTIVO } from "../data/instructivoInstrumento3";
 import { OPCIONES_AREA, OPCIONES_NIVEL } from "../services/catalogosCno";
+import CampoTexto from "./CampoTexto";
 import EncabezadoPaso from "./EncabezadoPaso";
 import SelectorBuscable from "./SelectorBuscable";
 import Tarjeta from "./Tarjeta";
@@ -20,26 +21,14 @@ function PropuestaOcupacion({ formulario, manejarCambio, actualizarCampo }) {
   const area = AREAS_DESEMPENO.find((opcion) => opcion.value === formulario.areaDesempeno);
 
   return (
-    <fieldset className="paso">
+    <fieldset className="paso" tabIndex={-1}>
       <EncabezadoPaso numero={2} descripcion="Defina el perfil y el propósito de la nueva ocupación, y ubíquela en la CNO." />
 
       <div className="tarjetas">
         <Tarjeta id="tarjeta-propuesta" icono="work_outline" titulo="Datos de la ocupación" descripcion="Nombre y propósito de la ocupación que propone.">
           <div className="form-grid">
-            <div className="campo campo-completo">
-              <label htmlFor="nombreOcupacion">
-                Nombre de la ocupación <span aria-hidden="true" className="obligatorio">*</span>
-              </label>
-              <p id="nombreOcupacion-ayuda" className="ayuda-campo">{INSTRUCTIVO.nombreOcupacion}</p>
-              <input id="nombreOcupacion" name="nombreOcupacion" type="text" value={formulario.nombreOcupacion} onChange={manejarCambio} placeholder="Ejemplo: Analista de datos" aria-describedby="nombreOcupacion-ayuda" required />
-            </div>
-            <div className="campo campo-completo">
-              <label htmlFor="descripcion">
-                Descripción de la ocupación <span aria-hidden="true" className="obligatorio">*</span>
-              </label>
-              <p id="descripcion-ayuda" className="ayuda-campo">{INSTRUCTIVO.descripcion}</p>
-              <textarea id="descripcion" name="descripcion" value={formulario.descripcion} onChange={manejarCambio} rows="4" placeholder="Describa el propósito y alcance de la ocupación" aria-describedby="descripcion-ayuda" required />
-            </div>
+            <CampoTexto id="nombreOcupacion" etiqueta="Nombre de la ocupación" ayuda={INSTRUCTIVO.nombreOcupacion} placeholder="Ejemplo: Analista de datos" autoComplete="off" valor={formulario.nombreOcupacion} onChange={manejarCambio} requerido completo />
+            <CampoTexto id="descripcion" etiqueta="Descripción de la ocupación" ayuda={INSTRUCTIVO.descripcion} placeholder="Describa el propósito y alcance de la ocupación" valor={formulario.descripcion} onChange={manejarCambio} multilinea requerido completo />
           </div>
         </Tarjeta>
 

@@ -14,9 +14,9 @@ function TablaCatalogo({ id, titulo, columna, catalogo, seleccionados, onAlterna
     <div className="tabla-catalogo-contenedor">
       <div className="tabla-catalogo-herramientas">
         <div className="filtro-busqueda">
-          <label htmlFor={`${id}-filtro`} className="filtro-etiqueta"><span aria-hidden="true" className="material-icons">search</span>Búsqueda</label>
+          <label htmlFor={`${id}-filtro`} className="filtro-etiqueta"><span aria-hidden="true" className="material-icons-round">search</span>Búsqueda</label>
           <div className="campo-con-icono">
-            <span aria-hidden="true" className="material-icons">search</span>
+            <span aria-hidden="true" className="material-icons-round">search</span>
             <input id={`${id}-filtro`} type="search" value={filtro} onChange={(evento) => setFiltro(evento.target.value)} onKeyDown={(evento) => { if (evento.key === "Enter") evento.preventDefault(); }} placeholder="Código, nombre o descripción" autoComplete="off" />
           </div>
         </div>

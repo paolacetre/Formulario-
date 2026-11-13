@@ -1,28 +1,38 @@
 /* Solicitud de creación de ocupación.
    Sigue el sistema visual del proyecto Clasificación de Ocupaciones (Figma "Ecosistema visual nivel fábrica"):
    solo Work Sans 400/600; títulos 26, subtítulos 20 y texto 16 (14 para ayudas); un solo radio de 16px
-   en botones, campos y tarjetas (999px en píldoras y botones de ícono); colores de marca y tres estados.
+   en botones, campos y tarjetas (999px en píldoras y botones de ícono); íconos Material Icons Round;
+   y solo los colores de la guía de marca (abajo). Reglas de uso:
+   - Texto: azul profundo o neutrales. El rojo de rechazo solo como texto sobre blanco (4.5:1).
+   - Verde de marca: botones principales, selección, foco y progreso.
+   - Colores de estado y azul opcional: fondos, bordes, íconos y acentos, nunca como texto.
+   - Las transparencias y el "velo" de hover se derivan de estos mismos colores.
    Todo va dentro de .solicitud para no cambiar las demás vistas. */
 
 .solicitud {
-  --s-texto: #001631;
-  --s-gris: #525252;
-  --s-gris-claro: #8f8f8f;
-  --s-borde: #d4d4d4;
-  --s-fondo: #f1f1f1;
-  --s-verde: #7db728;
-  --s-verde-hover: #6a9d20;
-  --s-verde-suave: rgba(125, 183, 40, 0.2);
-  --s-ok-fondo: #ebf6e6;
+  /* Marca */
+  --s-verde: #7db728;          /* Botones */
+  --s-azul: #1face3;           /* Uso opcional */
+  --s-fondo: #f1f1f1;          /* Background body (neutral-50) */
+  --s-texto: #001631;          /* Textos y background */
+  /* Neutrales */
+  --s-borde: #d4d4d4;          /* neutral-100 */
+  --s-gris-claro: #8f8f8f;     /* neutral-400 */
+  --s-gris: #525252;           /* neutral-700 */
+  --s-gris-oscuro: #303030;    /* neutral-900 */
+  /* Estados: aprobación, rechazo y advertencia (color y background) */
   --s-ok: #349a00;
-  --s-error-fondo: #ffe9e9;
+  --s-ok-fondo: #ebf6e6;
   --s-error: #e81c1c;
+  --s-error-fondo: #ffe9e9;
+  --s-alerta: #fdc300;
   --s-alerta-fondo: #fff9e6;
-  --s-alerta: #d97706;
-  --s-info-fondo: rgba(31, 172, 227, 0.14);
-  --s-info: #0b6a92;
+  /* Derivados de la paleta */
+  --s-verde-suave: rgba(125, 183, 40, 0.2);
+  --s-info-fondo: rgba(31, 172, 227, 0.12);
+  --s-velo: linear-gradient(rgba(0, 22, 49, 0.1), rgba(0, 22, 49, 0.1));
   --s-radio: 16px;
-  --s-sombra: 0 4px 18px rgba(39, 53, 72, 0.05);
+  --s-sombra: 0 4px 18px rgba(0, 22, 49, 0.05);
 
   min-height: 100svh;
   padding: clamp(20px, 4vw, 40px) 20px 48px;
@@ -34,7 +44,7 @@
 }
 
 .solicitud :is(button, input, select, textarea) { font-family: inherit; }
-.solicitud .material-icons { font-size: 20px; line-height: 1; }
+.solicitud .material-icons-round { font-size: 20px; line-height: 1; }
 .solicitud p { margin-top: 0; }
 
 /* ---------- Estructura ---------- */
@@ -48,18 +58,27 @@
 .solicitud-encabezado-principal { display: flex; align-items: flex-start; gap: 16px; }
 .solicitud-encabezado-texto { margin: 0; color: var(--s-gris); line-height: 1.5; }
 
-.tarjeta-icono { display: grid; flex: 0 0 44px; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--s-ok-fondo); color: var(--s-verde-hover); }
+.tarjeta-icono { display: grid; flex: 0 0 44px; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--s-ok-fondo); color: var(--s-ok); }
 .solicitud .tarjeta-icono { font-size: 22px; }
 .tarjeta-icono-grande { flex-basis: 52px; width: 52px; height: 52px; }
 .solicitud .tarjeta-icono-grande { font-size: 26px; }
 
 /* ---------- Indicador de pasos ---------- */
-.progreso-formulario { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--s-borde); }
-.progreso-formulario ol { display: grid; grid-template-columns: repeat(var(--pasos, 7), minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
-.progreso-item { position: relative; min-width: 0; }
-.progreso-item:not(:first-child)::before { content: ""; position: absolute; top: 17px; right: calc(50% + 24px); width: calc(100% - 48px); height: 2px; border-radius: 2px; background: var(--s-borde); }
-.progreso-item.completada::before, .progreso-item.actual::before { background: var(--s-verde); }
-.progreso-item button { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; padding: 0 4px; border: 0; background: transparent; color: var(--s-gris); font-size: 14px; line-height: 1.3; text-align: center; }
+.progreso-formulario { --progreso-espacio: clamp(14px, 2vw, 24px); margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--s-borde); }
+/* Todos los pasos en una línea. Con espacio de sobra miden lo mismo; si no, ninguno se encoge por debajo
+   de su palabra más larga (p. ej. "Conocimientos") y entre títulos siempre queda --progreso-espacio. */
+.progreso-formulario ol { display: flex; gap: var(--progreso-espacio); margin: 0; padding: 0; list-style: none; }
+.progreso-item { position: relative; flex: 1 1 0; }
+/* Conector en dos mitades (del centro del espacio al círculo y del círculo al centro del espacio siguiente),
+   para que una los círculos aunque los pasos tengan anchos distintos. Cada tramo se pinta de verde si el
+   paso al que llega está completado o es el actual. */
+.progreso-item::before, .progreso-item::after { content: ""; position: absolute; top: 17px; height: 2px; background: var(--s-borde); }
+.progreso-item::before { left: calc(var(--progreso-espacio) / -2); right: calc(50% + 24px); }
+.progreso-item::after { left: calc(50% + 24px); right: calc(var(--progreso-espacio) / -2); }
+.progreso-item:first-child::before, .progreso-item:last-child::after { content: none; }
+.progreso-item:is(.completada, .actual)::before, .progreso-item:has(+ :is(.completada, .actual))::after { background: var(--s-verde); }
+.progreso-item button { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; padding: 0; border: 0; background: transparent; color: var(--s-gris); font-size: 14px; line-height: 1.3; text-align: center; }
+.progreso-etiqueta { text-wrap: balance; }
 .progreso-item button:not(:disabled) { cursor: pointer; }
 .progreso-item button:disabled { cursor: default; }
 .progreso-item button:focus-visible { border-radius: var(--s-radio); outline: 3px solid var(--s-verde); outline-offset: 2px; }
@@ -75,7 +94,10 @@
 .progreso-barra span { display: block; height: 100%; border-radius: inherit; background: var(--s-verde); transition: width 0.3s ease; }
 
 /* ---------- Encabezado de cada paso ---------- */
-.solicitud .paso { min-inline-size: 0; margin: 0; padding: 0; border: 0; }
+.solicitud .paso { min-inline-size: 0; margin: 0; padding: 0; border: 0; animation: solicitud-aparecer 0.28s ease-out; }
+/* El paso recibe el foco al cambiar (tabIndex -1) solo para que el lector de pantalla lo anuncie. */
+.solicitud .paso:focus { outline: none; }
+@keyframes solicitud-aparecer { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .solicitud .paso > legend { float: left; width: 100%; padding: 0; }
 .solicitud .paso > legend + * { clear: both; }
 .solicitud .paso-encabezado { margin: 0 0 6px; font-size: inherit; line-height: 1.3; }
@@ -85,12 +107,14 @@
 
 /* ---------- Tarjetas ---------- */
 .solicitud .tarjetas { display: grid; gap: 20px; }
-.solicitud .tarjeta { min-width: 0; padding: 24px; border: 1px solid var(--s-borde); border-radius: var(--s-radio); background: #fff; box-shadow: var(--s-sombra); }
+.solicitud .tarjeta { min-width: 0; padding: 24px; border: 1px solid var(--s-borde); border-radius: var(--s-radio); background: #fff; box-shadow: var(--s-sombra); transition: border-color 0.18s ease, box-shadow 0.18s ease; }
+/* La tarjeta en la que se está escribiendo se resalta con el verde de marca. */
+.solicitud .tarjeta:focus-within { border-color: rgba(125, 183, 40, 0.55); box-shadow: 0 6px 24px rgba(0, 22, 49, 0.08); }
 .solicitud .tarjeta-encabezado { display: flex; align-items: flex-start; gap: 16px; margin: 0 0 20px; padding: 0; border: 0; }
 .tarjeta-encabezado-texto { flex: 1; min-width: 0; }
 .solicitud .tarjeta-encabezado h3 { margin: 0; color: var(--s-texto); font-size: 20px; font-weight: 600; line-height: 1.3; }
 .solicitud .tarjeta-encabezado p { margin: 4px 0 0; color: var(--s-gris); font-size: 16px; line-height: 1.5; }
-.solicitud .tarjeta-resumen { flex: 0 0 auto; padding: 4px 12px; border-radius: 999px; background: var(--s-ok-fondo); color: var(--s-ok); font-size: 13px; font-weight: 400; letter-spacing: 0.4px; white-space: nowrap; }
+.solicitud .tarjeta-resumen { flex: 0 0 auto; padding: 4px 12px; border-radius: 999px; background: var(--s-ok-fondo); color: var(--s-texto); font-size: 13px; font-weight: 400; letter-spacing: 0.4px; white-space: nowrap; }
 
 /* ---------- Campos ---------- */
 .solicitud .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 20px; }
@@ -130,24 +154,43 @@
 .solicitud input[type="checkbox"] { width: 18px; height: 18px; margin: 0; accent-color: var(--s-verde); cursor: pointer; }
 
 .solicitud .clasificacion-campos { display: grid; gap: 22px; }
-.solicitud .descripcion-seleccion { margin-top: 10px; padding: 14px 16px; border: 0; border-radius: var(--s-radio); background: var(--s-info-fondo); color: var(--s-info); font-size: 14px; line-height: 1.55; }
+.solicitud .descripcion-seleccion { margin-top: 10px; padding: 14px 16px; border: 0; border-radius: var(--s-radio); background: var(--s-info-fondo); color: var(--s-texto); font-size: 14px; line-height: 1.55; }
 .solicitud .descripcion-seleccion strong { display: block; margin-bottom: 4px; font-weight: 600; }
 .solicitud .descripcion-seleccion p { margin: 0; color: var(--s-texto); }
-.nota-campo { margin: 10px 0 0; color: var(--s-gris-claro); font-size: 14px; line-height: 1.4; }
+/* Validación en línea (CampoTexto): rechazo en rojo y aprobación con check verde. */
+.solicitud .campo-control { position: relative; }
+.solicitud .campo-estado-icono { position: absolute; top: 12px; right: 12px; font-size: 20px; pointer-events: none; }
+.solicitud :is(.campo-valido, .campo-invalido) :is(input, textarea) { padding-right: 42px; }
+.solicitud .campo-valido .campo-estado-icono { color: var(--s-ok); }
+.solicitud .campo-invalido .campo-estado-icono { color: var(--s-error); }
+.solicitud .campo-invalido :is(input, textarea) { border-color: var(--s-error); }
+.solicitud .campo-invalido :is(input, textarea):focus { border-color: var(--s-error); box-shadow: 0 0 0 3px rgba(232, 28, 28, 0.15); }
+.solicitud .campo-invalido label { color: var(--s-error); }
 /* Descripción de cada campo, tomada del instructivo del Instrumento 3. */
 .solicitud .ayuda-campo { margin: 0; color: var(--s-gris); font-size: 14px; line-height: 1.45; }
 .solicitud .selector-buscable .ayuda-campo { margin: -2px 0 8px; }
 .solicitud .elementos-manuales .ayuda-manual { margin: -6px 0 12px; }
 
 /* ---------- Avisos ---------- */
-.solicitud .aviso { display: flex; align-items: flex-start; gap: 12px; margin: 0; padding: 14px 18px; border: 1px solid transparent; border-radius: var(--s-radio); line-height: 1.5; }
-.solicitud .aviso > .material-icons { flex: 0 0 auto; margin-top: 1px; font-size: 22px; }
+.solicitud .aviso { display: flex; align-items: flex-start; gap: 12px; margin: 0; padding: 14px 18px; border: 1px solid transparent; border-left-width: 4px; border-radius: var(--s-radio); color: var(--s-texto); line-height: 1.5; }
+.solicitud .aviso > .material-icons-round { flex: 0 0 auto; margin-top: 1px; font-size: 22px; }
 .solicitud .aviso p { margin: 0; }
 .solicitud .aviso strong { font-weight: 600; }
 .solicitud .aviso ul { margin: 6px 0 0; padding-left: 18px; }
-.solicitud .aviso-info { border-color: rgba(31, 172, 227, 0.3); background: var(--s-info-fondo); color: var(--s-texto); }
-.solicitud .aviso-info > .material-icons { color: var(--s-info); }
-.solicitud .aviso-error { border-color: rgba(232, 28, 28, 0.25); background: var(--s-error-fondo); color: var(--s-error); }
+/* El amarillo y el azul no contrastan sobre su fondo suave: ahí el ícono va en azul profundo. */
+.solicitud .aviso-info { border-color: rgba(31, 172, 227, 0.35); border-left-color: var(--s-azul); background: var(--s-info-fondo); }
+.solicitud .aviso-info > .material-icons-round { color: var(--s-texto); }
+.solicitud .aviso-error { border-color: rgba(232, 28, 28, 0.3); border-left-color: var(--s-error); background: var(--s-error-fondo); }
+.solicitud .aviso-error > .material-icons-round { color: var(--s-error); }
+.solicitud .aviso-exito { border-color: rgba(52, 154, 0, 0.3); border-left-color: var(--s-ok); background: var(--s-ok-fondo); }
+.solicitud .aviso-exito > .material-icons-round { color: var(--s-ok); }
+.solicitud .aviso-advertencia { border-color: rgba(253, 195, 0, 0.6); border-left-color: var(--s-alerta); background: var(--s-alerta-fondo); }
+.solicitud .aviso-advertencia > .material-icons-round { color: var(--s-texto); }
+.solicitud .paso > .aviso { margin-bottom: 20px; }
+/* Botón con aspecto de enlace dentro de un aviso: lleva al paso donde está el dato. */
+.solicitud .aviso-enlace { padding: 0; border: 0; background: none; color: inherit; font-size: inherit; text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.solicitud .aviso-enlace:hover { text-decoration-thickness: 2px; }
+.solicitud .aviso-enlace:focus-visible { border-radius: 4px; outline: 3px solid var(--s-verde); outline-offset: 2px; }
 
 /* ---------- Botones ---------- */
 .solicitud .boton {
@@ -170,8 +213,8 @@
 }
 .solicitud .boton:focus-visible { outline: 3px solid var(--s-verde); outline-offset: 2px; }
 .solicitud .boton:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
-.solicitud .boton-principal { background: var(--s-verde); color: #fff; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.12); }
-.solicitud .boton-principal:hover:not(:disabled) { background: var(--s-verde-hover); transform: translateY(-1px); }
+.solicitud .boton-principal { background: var(--s-verde); color: #fff; box-shadow: 0 3px 0 rgba(0, 22, 49, 0.12); }
+.solicitud .boton-principal:hover:not(:disabled) { background-image: var(--s-velo); transform: translateY(-1px); }
 .solicitud .boton-secundario { border-color: transparent; background: var(--s-fondo); color: var(--s-texto); }
 .solicitud .boton-secundario:hover:not(:disabled) { background: var(--s-borde); }
 
@@ -181,7 +224,8 @@
 .boton-icono:focus-visible { outline: 3px solid var(--s-verde); outline-offset: 2px; }
 
 /* Botón de contorno: crear o agregar otro elemento. */
-.boton-crear-manual { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 14px; padding: 0 18px; border: 1.5px solid var(--s-verde); border-radius: var(--s-radio); background: #fff; color: var(--s-verde-hover); font-size: 16px; cursor: pointer; transition: background-color 0.18s ease; }
+.boton-crear-manual { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 14px; padding: 0 18px; border: 1.5px solid var(--s-verde); border-radius: var(--s-radio); background: #fff; color: var(--s-texto); font-size: 16px; cursor: pointer; transition: background-color 0.18s ease; }
+.solicitud .boton-crear-manual .material-icons-round { color: var(--s-ok); }
 .boton-crear-manual:hover { background: var(--s-ok-fondo); }
 .boton-crear-manual:focus-visible { outline: 3px solid var(--s-verde); outline-offset: 2px; }
 
@@ -202,22 +246,22 @@
   box-shadow: 0 10px 30px rgba(0, 22, 49, 0.12);
 }
 .solicitud .estado-guardado { display: flex; align-items: center; gap: 6px; width: auto; margin: 0; padding: 0; background: transparent; color: var(--s-gris); font-size: 14px; font-weight: 400; }
-.estado-guardado .material-icons { color: var(--s-ok); }
+.estado-guardado .material-icons-round { color: var(--s-ok); }
 .solicitud-acciones-botones { display: flex; gap: 10px; margin-left: auto; }
 
 /* ---------- Lista desplegable con buscador ---------- */
 .solicitud .selector-buscable { position: relative; min-width: 0; }
 .solicitud .filtro-etiqueta { display: flex; align-items: center; gap: 6px; margin: 0 0 6px; color: var(--s-gris); font-size: 16px; font-weight: 400; }
-.solicitud .filtro-etiqueta .material-icons { color: var(--s-gris); font-size: 18px; }
+.solicitud .filtro-etiqueta .material-icons-round { color: var(--s-gris); font-size: 18px; }
 .solicitud .selector-buscable-boton { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 44px; padding: 0 12px 0 14px; border: 1.5px solid var(--s-borde); border-radius: var(--s-radio); background: #fff; color: var(--s-texto); font-size: 16px; text-align: left; cursor: pointer; transition: border-color 0.18s ease, box-shadow 0.18s ease; }
 .selector-buscable-boton > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.solicitud .selector-buscable-boton .material-icons { color: var(--s-gris); font-size: 22px; }
+.solicitud .selector-buscable-boton .material-icons-round { color: var(--s-gris); font-size: 22px; }
 .solicitud .selector-buscable-boton:hover:not(:disabled) { border-color: var(--s-gris-claro); }
 .solicitud .selector-buscable-boton:focus-visible, .solicitud .selector-buscable-boton[aria-expanded="true"] { border-color: var(--s-verde); outline: none; box-shadow: 0 0 0 3px var(--s-verde-suave); }
 .solicitud .selector-buscable-boton:disabled { background: var(--s-fondo); color: var(--s-gris-claro); cursor: not-allowed; }
 .solicitud .selector-buscable-boton.invalido { border-color: var(--s-error); box-shadow: 0 0 0 3px rgba(232, 28, 28, 0.12); }
 .solicitud .selector-buscable-vacio { color: var(--s-gris-claro); }
-.solicitud .selector-buscable-error { margin: 6px 0 0; color: var(--s-error); font-size: 14px; font-weight: 400; }
+.solicitud .campo-error { margin: 6px 0 0; color: var(--s-error); font-size: 14px; font-weight: 400; }
 .solicitud .selector-buscable-validacion { position: absolute; bottom: 0; left: 0; width: 100%; height: 1px; min-height: 0; padding: 0; border: 0; opacity: 0; pointer-events: none; }
 .solicitud .selector-buscable-panel { position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; width: max(100%, 300px); max-width: calc(100vw - 32px); padding: 10px; border: 1px solid var(--s-borde); border-radius: var(--s-radio); background: #fff; box-shadow: 0 16px 40px rgba(0, 22, 49, 0.16); }
 .solicitud .selector-buscable-panel input { border-color: var(--s-verde); box-shadow: 0 0 0 3px var(--s-verde-suave); }
@@ -232,11 +276,11 @@
 .solicitud .selector-buscable-panel li.bloqueada { cursor: default; opacity: 0.55; }
 .solicitud .selector-buscable-panel .selector-buscable-sin-resultados { color: var(--s-gris); cursor: default; }
 .solicitud .selector-buscable-opcion-titulo { font-weight: 400; }
-.solicitud .selector-buscable-pie { margin: 8px 4px 0; color: var(--s-gris-claro); font-size: 14px; }
+.solicitud .selector-buscable-pie { margin: 8px 4px 0; color: var(--s-gris); font-size: 14px; }
 
 /* ---------- Catálogos de la CNO: opciones, elementos agregados y creación manual ---------- */
-.solicitud .codigo-cno { display: inline-flex; flex: 0 0 auto; align-self: flex-start; padding: 2px 10px; border-radius: 999px; background: var(--s-info-fondo); color: var(--s-info); font-size: 13px; font-weight: 400; letter-spacing: 0.4px; white-space: nowrap; }
-.solicitud .codigo-manual { background: var(--s-alerta-fondo); color: var(--s-alerta); }
+.solicitud .codigo-cno { display: inline-flex; flex: 0 0 auto; align-self: flex-start; padding: 2px 10px; border-radius: 999px; background: var(--s-info-fondo); color: var(--s-texto); font-size: 13px; font-weight: 400; letter-spacing: 0.4px; white-space: nowrap; }
+.solicitud .codigo-manual { background: var(--s-alerta-fondo); box-shadow: inset 0 0 0 1px var(--s-alerta); }
 .solicitud .elementos-manuales > .aviso { margin-top: 12px; }
 
 .solicitud .lista-catalogo-subtitulo { margin: 0 0 12px; color: var(--s-texto); font-size: 16px; font-weight: 600; }
@@ -254,7 +298,9 @@
 .lista-casillas-campos > * { flex: 1; min-width: 0; }
 .solicitud .lista-casillas-campos input.corto { flex: 0 0 140px; }
 .solicitud .lista-casillas-campos textarea { min-height: 76px; }
-.solicitud .lista-casillas-aviso { margin: 6px 0 0; color: var(--s-alerta); font-size: 14px; }
+.solicitud .lista-casillas-aviso { display: flex; align-items: center; gap: 6px; margin: 6px 0 0; color: var(--s-texto); font-size: 14px; }
+.solicitud .lista-casillas-aviso .material-icons-round { color: var(--s-texto); font-size: 18px; }
+.solicitud .lista-casillas-fila.repetida :is(input, textarea) { border-color: var(--s-alerta); }
 .solicitud .lista-casillas > .boton-crear-manual { margin-top: 14px; }
 .solicitud .boton-icono:disabled { background: transparent; color: var(--s-gris); cursor: default; opacity: 0.35; }
 
@@ -269,7 +315,7 @@
 .solicitud .tarjeta-elemento-nombre.largo { font-weight: 400; line-height: 1.5; }
 .solicitud .tarjeta-elemento-descripcion { color: var(--s-gris); font-size: 14px; line-height: 1.5; }
 .solicitud .tarjeta-elemento-ocupacion { display: flex; align-items: flex-start; gap: 6px; padding: 0; background: transparent; color: var(--s-gris); font-size: 14px; line-height: 1.4; }
-.solicitud .tarjeta-elemento-ocupacion .material-icons { margin-top: 1px; font-size: 16px; }
+.solicitud .tarjeta-elemento-ocupacion .material-icons-round { margin-top: 1px; font-size: 16px; }
 
 .solicitud .formulario-manual { margin-top: 14px; padding: 20px; border: 0; border-radius: var(--s-radio); background: var(--s-fondo); }
 .solicitud .formulario-manual .formulario-manual-titulo { margin: 0 0 14px; color: var(--s-texto); font-weight: 600; }
@@ -285,10 +331,10 @@
 .solicitud .tabla-catalogo-herramientas { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 16px; margin-bottom: 14px; }
 .solicitud .filtro-busqueda { flex: 1 1 320px; min-width: 0; max-width: 520px; }
 .solicitud .campo-con-icono { position: relative; }
-.solicitud .campo-con-icono > .material-icons { position: absolute; top: 50%; left: 14px; color: var(--s-gris); pointer-events: none; transform: translateY(-50%); }
+.solicitud .campo-con-icono > .material-icons-round { position: absolute; top: 50%; left: 14px; color: var(--s-gris); pointer-events: none; transform: translateY(-50%); }
 .solicitud .campo-con-icono input { padding-left: 44px; border-color: transparent; background-color: var(--s-fondo); }
 .solicitud .campo-con-icono input:focus { background-color: #fff; }
-.solicitud .tabla-catalogo-contador { margin: 0; padding: 6px 14px; border-radius: 999px; background: var(--s-ok-fondo); color: var(--s-ok); font-size: 14px; }
+.solicitud .tabla-catalogo-contador { margin: 0; padding: 6px 14px; border-radius: 999px; background: var(--s-ok-fondo); color: var(--s-texto); font-size: 14px; }
 .solicitud .tabla-catalogo-contador strong { font-weight: 600; }
 .solicitud .tabla-catalogo-wrapper { max-height: 520px; overflow: auto; border: 1px solid var(--s-borde); border-radius: var(--s-radio); }
 .solicitud .tabla-catalogo { width: 100%; border-collapse: separate; border-spacing: 0; color: var(--s-texto); font-size: 16px; }
@@ -307,10 +353,11 @@
 .solicitud .tabla-catalogo-vacia { padding: 24px 16px; color: var(--s-gris); text-align: center; }
 
 /* ---------- Documentos adjuntos ---------- */
-.zona-carga { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 28px 20px; border: 1.5px dashed var(--s-borde); border-radius: var(--s-radio); background: var(--s-fondo); text-align: center; cursor: pointer; transition: border-color 0.18s ease, background-color 0.18s ease; }
+/* Con .solicitud gana a la regla general de label (display: block), que la dejaba en una sola línea. */
+.solicitud .zona-carga { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 28px 20px; border: 1.5px dashed var(--s-borde); border-radius: var(--s-radio); background: var(--s-fondo); text-align: center; cursor: pointer; transition: border-color 0.18s ease, background-color 0.18s ease; }
 .zona-carga:hover, .zona-carga:focus-within { border-color: var(--s-verde); background: var(--s-ok-fondo); }
 .zona-carga:has(input:focus-visible) { outline: 3px solid var(--s-verde); outline-offset: 2px; }
-.solicitud .zona-carga-icono { display: grid; place-items: center; width: 52px; height: 52px; margin-bottom: 4px; border-radius: 50%; background: #fff; color: var(--s-verde-hover); font-size: 26px; }
+.solicitud .zona-carga-icono { display: grid; place-items: center; width: 52px; height: 52px; margin-bottom: 4px; border-radius: 50%; background: #fff; color: var(--s-ok); font-size: 26px; }
 .zona-carga-titulo { color: var(--s-texto); font-weight: 600; }
 .zona-carga small { color: var(--s-gris); font-size: 14px; }
 .solicitud .zona-carga input { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
@@ -318,11 +365,11 @@
 
 .solicitud .lista-adjuntos { display: grid; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
 .solicitud .lista-adjuntos li { display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 16px; border: 0; border-radius: var(--s-radio); background: var(--s-fondo); }
-.solicitud .lista-adjuntos-icono { flex: 0 0 auto; color: var(--s-verde-hover); font-size: 22px; }
+.solicitud .lista-adjuntos-icono { flex: 0 0 auto; color: var(--s-ok); font-size: 22px; }
 .solicitud .lista-adjuntos-archivo { display: flex; flex: 1; flex-direction: column; gap: 2px; min-width: 0; color: var(--s-texto); line-height: 1.4; overflow-wrap: anywhere; text-align: left; }
 .solicitud .lista-adjuntos small { color: var(--s-gris); font-size: 14px; }
-.solicitud .boton-ver-adjunto { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border: 1.5px solid var(--s-verde); border-radius: var(--s-radio); background: #fff; color: var(--s-verde-hover); font-size: 14px; font-weight: 400; cursor: pointer; }
-.solicitud .boton-ver-adjunto .material-icons { font-size: 18px; }
+.solicitud .boton-ver-adjunto { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border: 1.5px solid var(--s-verde); border-radius: var(--s-radio); background: #fff; color: var(--s-texto); font-size: 14px; font-weight: 400; cursor: pointer; }
+.solicitud .boton-ver-adjunto .material-icons-round { color: var(--s-ok); font-size: 18px; }
 .solicitud .boton-ver-adjunto:hover { background: var(--s-ok-fondo); }
 .solicitud .boton-ver-adjunto:focus-visible { outline: 3px solid var(--s-verde); outline-offset: 2px; }
 
@@ -330,8 +377,8 @@
 .solicitud .revision-grupo { margin: 0; }
 .revision-grupo-encabezado { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--s-borde); }
 .solicitud .revision-grupo-encabezado h3 { margin: 0; color: var(--s-texto); font-size: 20px; font-weight: 600; }
-.boton-editar { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border: 0; border-radius: var(--s-radio); background: transparent; color: var(--s-verde-hover); font-size: 16px; cursor: pointer; }
-.solicitud .boton-editar .material-icons { font-size: 18px; }
+.boton-editar { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border: 0; border-radius: var(--s-radio); background: transparent; color: var(--s-texto); font-size: 16px; cursor: pointer; }
+.solicitud .boton-editar .material-icons-round { color: var(--s-ok); font-size: 18px; }
 .boton-editar:hover { background: var(--s-ok-fondo); }
 .boton-editar:focus-visible { outline: 3px solid var(--s-verde); outline-offset: 2px; }
 .solicitud .revision-grupo dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; margin: 0; }
@@ -339,7 +386,7 @@
 .solicitud .revision-grupo .revision-campo-completo { grid-column: 1 / -1; }
 .solicitud .revision-grupo dt { margin-bottom: 4px; color: var(--s-gris); font-size: 14px; font-weight: 400; }
 .solicitud .revision-grupo dd { margin: 0; color: var(--s-texto); line-height: 1.5; overflow-wrap: anywhere; white-space: pre-wrap; }
-.solicitud .revision-vacio { margin: 0; color: var(--s-gris-claro); font-style: normal; }
+.solicitud .revision-vacio { margin: 0; color: var(--s-gris); font-style: normal; }
 .solicitud .revision-lista { display: grid; gap: 6px; margin: 0; padding-left: 20px; }
 .solicitud .revision-grupo .lista-adjuntos { margin-top: 0; }
 
@@ -349,20 +396,20 @@
 .solicitud-inicio-texto { max-width: 560px; margin: 0 0 24px; color: var(--s-gris); line-height: 1.6; }
 .solicitud-inicio-pasos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; width: 100%; max-width: 600px; margin: 0 0 28px; padding: 0; list-style: none; text-align: left; }
 .solicitud-inicio-pasos li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--s-radio); background: var(--s-fondo); color: var(--s-texto); font-size: 14px; line-height: 1.35; }
-.paso-circulo { display: grid; flex: 0 0 28px; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--s-ok-fondo); color: var(--s-verde-hover); font-size: 14px; font-weight: 600; }
+.paso-circulo { display: grid; flex: 0 0 28px; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--s-ok-fondo); color: var(--s-texto); font-size: 14px; font-weight: 600; }
 
 /* ---------- Confirmación ---------- */
 .solicitud .confirmacion-card { width: min(100%, 1040px); margin: 0 auto; padding: 40px 48px 36px; border: 1px solid var(--s-borde); border-radius: var(--s-radio); background: #fff; box-shadow: var(--s-sombra); text-align: center; }
 .solicitud .confirmacion-icono { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 50%; background: var(--s-ok-fondo); color: var(--s-ok); font-size: 34px; }
-.solicitud .confirmacion-etiqueta { display: block; margin: 0 0 10px; color: var(--s-ok); font-size: 14px; font-weight: 600; letter-spacing: 1.4px; line-height: 1.3; }
+.solicitud .confirmacion-etiqueta { display: block; margin: 0 0 10px; color: var(--s-texto); font-size: 14px; font-weight: 600; letter-spacing: 1.4px; line-height: 1.3; }
 .solicitud .confirmacion-texto { max-width: 640px; margin: 0 auto 28px; color: var(--s-gris); font-size: 16px; line-height: 1.6; }
 .solicitud .confirmacion-radicado { display: inline-flex; flex-direction: column; align-items: center; gap: 6px; min-width: min(100%, 440px); margin-bottom: 32px; padding: 22px 32px; border: 1.5px dashed rgba(31, 172, 227, 0.5); border-radius: var(--s-radio); background: var(--s-info-fondo); }
-.solicitud .confirmacion-radicado span { color: var(--s-info); font-size: 13px; font-weight: 400; letter-spacing: 1.4px; }
+.solicitud .confirmacion-radicado span { color: var(--s-gris); font-size: 13px; font-weight: 400; letter-spacing: 1.4px; }
 .solicitud .confirmacion-radicado strong { color: var(--s-texto); font-family: inherit; font-size: 32px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0.08em; line-height: 1.2; }
 .solicitud .confirmacion-radicado small { color: var(--s-gris); font-size: 14px; }
 .solicitud .confirmacion-conservar { margin: -16px 0 20px; color: var(--s-gris); font-size: 14px; }
 .solicitud .confirmacion-contacto { max-width: 640px; margin: 0 auto 28px; text-align: left; }
-.solicitud .confirmacion-contacto a { color: var(--s-info); font-weight: 600; overflow-wrap: anywhere; }
+.solicitud .confirmacion-contacto a { color: var(--s-texto); font-weight: 600; overflow-wrap: anywhere; }
 .solicitud .confirmacion-resumen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 32px; margin: 0 0 28px; padding: 24px 28px; border: 0; border-radius: var(--s-radio); background: var(--s-fondo); text-align: left; }
 .solicitud .confirmacion-resumen > div { min-width: 0; }
 .solicitud .confirmacion-resumen dt { margin-bottom: 4px; color: var(--s-texto); font-weight: 600; }
@@ -372,8 +419,14 @@
 .solicitud .confirmacion-adjuntos .lista-adjuntos li { background: #fff; }
 .solicitud .confirmacion-card > .aviso { margin-bottom: 20px; text-align: left; }
 .solicitud .confirmacion-acciones { display: flex; flex-direction: column; align-items: center; gap: 16px; }
-.solicitud .confirmacion-volver { color: var(--s-verde-hover); font-weight: 400; text-decoration: underline; text-underline-offset: 3px; }
+.solicitud .confirmacion-volver { color: var(--s-texto); font-weight: 400; text-decoration: underline; text-underline-offset: 3px; }
 .solicitud .confirmacion-volver:hover { color: var(--s-texto); }
+
+/* ---------- Pantallas medianas ---------- */
+/* Un poco menos de margen en el encabezado deja más ancho a los siete pasos en línea. */
+@media (max-width: 960px) {
+  .solicitud-encabezado { padding-inline: 20px; }
+}
 
 /* ---------- Pantallas angostas ---------- */
 @media (max-width: 760px) {
@@ -421,4 +474,25 @@
   .solicitud .confirmacion-radicado { width: 100%; min-width: 0; padding: 20px 16px; }
   .solicitud .confirmacion-radicado strong { font-size: 26px; }
   .solicitud .confirmacion-resumen { padding: 20px 16px; }
+}
+
+/* ---------- Movimiento reducido ---------- */
+/* Quien pide menos movimiento en su sistema ve los cambios sin animaciones ni transiciones. */
+@media (prefers-reduced-motion: reduce) {
+  .solicitud *, .solicitud *::before, .solicitud *::after { animation: none !important; transition: none !important; }
+}
+
+/* ---------- Diálogo de confirmación ---------- */
+.solicitud .dialogo { width: min(100% - 32px, 500px); padding: 28px; border: 0; border-radius: var(--s-radio); background: #fff; color: var(--s-texto); box-shadow: 0 24px 60px rgba(0, 22, 49, 0.25); text-align: center; }
+.solicitud .dialogo::backdrop { background: rgba(0, 22, 49, 0.45); }
+.solicitud .dialogo h2 { margin: 0 0 8px; font-size: 20px; font-weight: 600; line-height: 1.3; }
+.solicitud .dialogo p { margin: 0 0 24px; color: var(--s-gris); line-height: 1.5; }
+.solicitud .dialogo-icono { display: grid; place-items: center; width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 50%; background: var(--s-alerta); color: var(--s-texto); font-size: 28px; }
+.solicitud .dialogo-acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+/* Acción destructiva: rojo de rechazo con texto blanco (4.5:1). */
+.solicitud .boton-peligro { background: var(--s-error); color: #fff; }
+.solicitud .boton-peligro:hover:not(:disabled) { background-image: var(--s-velo); }
+@media (max-width: 760px) {
+  .solicitud .dialogo { padding: 24px 18px; }
+  .solicitud .dialogo-acciones .boton { flex: 1 1 100%; }
 }

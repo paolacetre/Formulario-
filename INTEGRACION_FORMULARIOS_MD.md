@@ -132,9 +132,9 @@ Estos estilos son necesarios si el proyecto institucional no tiene un sistema vi
 
 ## 4) Qué no copiar como está en producción
 
-- `src/data/ocupacionesMock.js` como fuente oficial de datos.
+- `src/data/instrumento3.models.js` como fuente oficial de los catálogos: en producción deben consultarse en la API.
 - `localStorage` como persistencia definitiva.
-- `console.log` como envío real.
+- El modo `mock` de `solicitudesService.js` como envío real.
 - PDFs locales con rutas relativas `/referencias/...` si no existen dentro del proyecto final.
 - El prototipo completo sin revisión de compatibilidad con el proyecto institucional.
 
@@ -145,7 +145,7 @@ Estos estilos son necesarios si el proyecto institucional no tiene un sistema vi
 1. Copiar solo la estructura del formulario y sus componentes.
 2. Conectar el formulario al servicio real del backend (`VITE_MODO_SOLICITUDES=api`).
 3. Reemplazar `localStorage` por persistencia institucional.
-4. Sustituir `ocupacionesMock.js` por una API o datos reales.
+4. Sustituir los catálogos de `instrumento3.models.js` por la API o datos reales.
 5. Mantener la lógica de validación pero alinearla con el negocio real.
 6. Revisar que los nombres y rutas no colisionen con el proyecto principal.
 

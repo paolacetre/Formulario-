@@ -3,7 +3,7 @@ function Tarjeta({ id, titulo, descripcion, resumen, icono, children }) {
   return (
     <section className="tarjeta" aria-labelledby={`${id}-titulo`}>
       <header className="tarjeta-encabezado">
-        {icono && <span aria-hidden="true" className="tarjeta-icono material-icons">{icono}</span>}
+        {icono && <span aria-hidden="true" className="tarjeta-icono material-icons-round">{icono}</span>}
         <div className="tarjeta-encabezado-texto">
           <h3 id={`${id}-titulo`}>{titulo}</h3>
           {descripcion && <p>{descripcion}</p>}

@@ -8,7 +8,7 @@ import Tarjeta from "./Tarjeta";
 function Habilidades({ formulario, alternarCatalogo, actualizarCampo }) {
   const total = formulario.habilidades.length + formulario.habilidadesManuales.length;
   return (
-    <fieldset className="paso">
+    <fieldset className="paso" tabIndex={-1}>
       <EncabezadoPaso numero={4} descripcion="Seleccione en la tabla las habilidades más importantes para desempeñar las funciones. Si falta alguna, agréguela al final." />
       <div className="tarjetas">
         <Tarjeta id="tarjeta-habilidades" icono="psychology" titulo="Habilidades" descripcion={INSTRUCTIVO.habilidades} resumen={`${total} en total`}>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import CampoTexto from "./CampoTexto";
 import ListaAdjuntos from "./ListaAdjuntos";
 import EncabezadoPaso from "./EncabezadoPaso";
 import Tarjeta from "./Tarjeta";
@@ -31,22 +32,17 @@ function Justificacion({ formulario, manejarCambio, adjuntos, agregarAdjuntos, q
   };
 
   return (
-    <fieldset className="paso">
+    <fieldset className="paso" tabIndex={-1}>
       <EncabezadoPaso numero={6} descripcion="Explique la necesidad de crear esta ocupación y adjunte los documentos que la respalden." />
       <div className="tarjetas">
         <Tarjeta id="tarjeta-justificacion" icono="edit_note" titulo="Justificación" descripcion="Indique si responde a requerimientos del sector productivo o si tiene una aplicación jurídica, normativa o gubernamental.">
-          <div className="campo">
-            <label htmlFor="justificacion">
-              Justificación <span aria-hidden="true" className="obligatorio">*</span>
-            </label>
-            <textarea id="justificacion" name="justificacion" value={formulario.justificacion} onChange={manejarCambio} rows="5" placeholder="Explique las razones de la solicitud" required />
-          </div>
+          <CampoTexto id="justificacion" etiqueta="Justificación" placeholder="Explique las razones de la solicitud" valor={formulario.justificacion} onChange={manejarCambio} multilinea filas={5} requerido />
         </Tarjeta>
 
         <Tarjeta id="tarjeta-adjuntos" icono="attach_file" titulo="Documentos de soporte" descripcion="Adjunte los documentos que considere pertinentes como parte de la solicitud." resumen={`${adjuntos.length} ${adjuntos.length === 1 ? "archivo" : "archivos"}`}>
           <div className="adjuntos-justificacion">
             <label className="zona-carga" htmlFor="adjuntosJustificacion">
-              <span aria-hidden="true" className="zona-carga-icono material-icons">upload_file</span>
+              <span aria-hidden="true" className="zona-carga-icono material-icons-round">upload_file</span>
               <span className="zona-carga-titulo">Seleccionar archivos</span>
               <small id="adjuntos-ayuda">PDF, Word, Excel o imagen · máximo {TAMANO_MAXIMO_MB} MB por archivo</small>
               <input id="adjuntosJustificacion" type="file" multiple accept={EXTENSIONES_PERMITIDAS.join(",")} onChange={manejarArchivos} aria-describedby="adjuntos-ayuda" />
@@ -54,7 +50,7 @@ function Justificacion({ formulario, manejarCambio, adjuntos, agregarAdjuntos, q
 
             {erroresAdjuntos.length > 0 && (
               <div className="aviso aviso-error" role="alert">
-                <span aria-hidden="true" className="material-icons">error_outline</span>
+                <span aria-hidden="true" className="material-icons-round">error_outline</span>
                 <div>
                   <strong>Algunos archivos no se adjuntaron.</strong>
                   <ul>{erroresAdjuntos.map((error) => <li key={error}>{error}</li>)}</ul>
@@ -63,7 +59,10 @@ function Justificacion({ formulario, manejarCambio, adjuntos, agregarAdjuntos, q
             )}
 
             {adjuntos.length > 0 && <ListaAdjuntos adjuntos={adjuntos} onQuitar={quitarAdjunto} />}
-            <p className="nota-campo">Los archivos no se guardan en el borrador automático: si recarga la página deberá adjuntarlos de nuevo.</p>
+            <div className="aviso aviso-advertencia">
+              <span aria-hidden="true" className="material-icons-round">warning_amber</span>
+              <p><strong>Importante:</strong> los archivos no se guardan en el borrador automático. Si recarga la página deberá adjuntarlos de nuevo.</p>
+            </div>
           </div>
         </Tarjeta>
       </div>

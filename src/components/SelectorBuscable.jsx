@@ -93,7 +93,7 @@ function SelectorBuscable({
   return (
     <div className="selector-buscable" ref={contenedor}>
       <label id={`${id}-etiqueta`} htmlFor={id} className="filtro-etiqueta">
-        {icono && <span aria-hidden="true" className="material-icons">{icono}</span>}
+        {icono && <span aria-hidden="true" className="material-icons-round">{icono}</span>}
         {etiqueta}
         {requerido && <span aria-hidden="true" className="obligatorio">*</span>}
       </label>
@@ -118,7 +118,7 @@ function SelectorBuscable({
         }}
       >
         <span className={seleccionada ? "" : "selector-buscable-vacio"}>{seleccionada ? seleccionada.label : textoTodas || placeholder}</span>
-        <span aria-hidden="true" className="material-icons">expand_more</span>
+        <span aria-hidden="true" className="material-icons-round">expand_more</span>
       </button>
       {/* Campo oculto para que el formulario siga validando los obligatorios con checkValidity.
           El aviso se muestra junto al selector en lugar de la burbuja del navegador. */}
@@ -138,7 +138,7 @@ function SelectorBuscable({
           }}
         />
       )}
-      {mostrarError && <p id={`${id}-error`} className="selector-buscable-error">Seleccione una opción de {etiqueta.toLowerCase()}.</p>}
+      {mostrarError && <p id={`${id}-error`} className="campo-error">Seleccione una opción de {etiqueta.toLowerCase()}.</p>}
 
       {abierto && (
         <div className="selector-buscable-panel">

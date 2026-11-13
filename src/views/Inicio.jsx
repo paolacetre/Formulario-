@@ -5,20 +5,17 @@ function Inicio() {
     <main className="pagina">
       <section className="inicio-card">
         <div className="inicio-contenido">
-          <span className="etiqueta">CATALOGO DE OCUPACIONES</span>
-          <h1>Consulta y gestión de ocupaciones laborales</h1>
+          <span className="etiqueta">CATÁLOGO DE OCUPACIONES</span>
+          <h1>Solicitud nueva ocupación</h1>
           <p>
-            Consulte información de ocupaciones CNO y CUOC o solicite la
-            creación de una nueva ocupación.
+            Proponga una nueva ocupación para la Clasificación Nacional de
+            Ocupaciones (CNO). El equipo de analistas evaluará su solicitud.
           </p>
-          <nav className="inicio-acciones" aria-label="Acciones principales">
-            <Link className="boton boton-principal" to="/buscar">
-              Buscar ocupación
+          <div className="inicio-acciones">
+            <Link className="boton boton-principal" to="/formulario">
+              Solicitar nueva ocupación
             </Link>
-            <Link className="boton boton-opcional" to="/formulario">
-              Solicitar creación de ocupación
-            </Link>
-          </nav>
+          </div>
         </div>
       </section>
     </main>

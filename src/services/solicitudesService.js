@@ -13,19 +13,42 @@ export const CORREO_CONTACTO = (import.meta.env.VITE_CORREO_CONTACTO ?? "").trim
 const MODO = (import.meta.env.VITE_MODO_SOLICITUDES ?? "mock").trim().toLowerCase();
 const URL_API = (import.meta.env.VITE_API_URL ?? "").trim().replace(/\/$/, "");
 const CLAVE_MOCK = "clasificacion-solicitudes-ocupacion";
+// Si el backend no responde en este tiempo, el envío se cancela y se muestra el aviso de error
+// (sin esto, el botón quedaría en "Enviando…" indefinidamente).
+const TIEMPO_MAXIMO_MS = 30000;
+
+function errorRadicado(codigo, mensaje) {
+  const error = new Error(mensaje);
+  error.codigo = codigo;
+  return error;
+}
 
 async function radicarEnApi(tipo, datos) {
-  const respuesta = await fetch(`${URL_API}/api/public/solicitudes-ocupacion`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ tipo, datos }),
-  });
+  let respuesta;
+  try {
+    respuesta = await fetch(`${URL_API}/api/public/solicitudes-ocupacion`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tipo, datos }),
+      signal: AbortSignal.timeout(TIEMPO_MAXIMO_MS),
+    });
+  } catch (error) {
+    if (error?.name === "TimeoutError") throw errorRadicado("SIN_RESPUESTA", `El backend no respondió en ${TIEMPO_MAXIMO_MS / 1000} s.`);
+    throw error;
+  }
   if (!respuesta.ok) {
     const error = new Error(`El backend respondió ${respuesta.status} al radicar la solicitud.`);
     error.status = respuesta.status;
     throw error;
   }
-  return respuesta.json();
+
+  // Sin radicado no hay confirmación posible: la respuesta se trata como error.
+  // Si la fecha falta o no es válida, se usa la hora del envío.
+  const cuerpo = await respuesta.json().catch(() => null);
+  const radicado = typeof cuerpo?.radicado === "string" ? cuerpo.radicado.trim() : "";
+  if (!radicado) throw errorRadicado("RESPUESTA_INVALIDA", "El backend respondió sin número de radicado.");
+  const fechaValida = !Number.isNaN(new Date(cuerpo.fechaRegistro).getTime());
+  return { radicado, fechaRegistro: fechaValida ? cuerpo.fechaRegistro : new Date().toISOString() };
 }
 
 function leerSolicitudesMock() {
@@ -56,9 +79,14 @@ export function radicarSolicitud(tipo, datos) {
 }
 
 export function mensajeErrorRadicado(error) {
-  return error?.status === 429
-    ? "Se enviaron demasiadas solicitudes desde este equipo. Espere un minuto e inténtelo de nuevo."
-    : "No fue posible radicar la solicitud. Verifique su conexión e inténtelo de nuevo; sus datos siguen en el formulario.";
+  if (error?.status === 429) return "Se enviaron demasiadas solicitudes desde este equipo. Espere un minuto e inténtelo de nuevo.";
+  if (error?.codigo === "SIN_RESPUESTA") return "El servidor tardó demasiado en responder. Inténtelo de nuevo en unos minutos; sus datos siguen en el formulario.";
+  // El backend sí recibió la solicitud: enviarla otra vez podría duplicarla.
+  if (error?.codigo === "RESPUESTA_INVALIDA") {
+    const contacto = CORREO_CONTACTO ? `comuníquese al correo ${CORREO_CONTACTO}` : "comuníquese con la entidad";
+    return `La solicitud llegó al servidor, pero no se recibió el número de radicado. Para no duplicarla, ${contacto} antes de enviarla de nuevo.`;
+  }
+  return "No fue posible radicar la solicitud. Verifique su conexión e inténtelo de nuevo; sus datos siguen en el formulario.";
 }
 
 // "27 de octubre de 2026 a las 3:45 p. m." en hora de Colombia.

@@ -63,7 +63,7 @@ function ListaCasillas({ id, elementos, onCambiar, singular, textoAgregar, place
       )}
       <ol className="lista-casillas-filas">
         {lista.map((elemento, indice) => (
-          <li className="lista-casillas-fila" key={indice}>
+          <li className={repetidas[indice] ? "lista-casillas-fila repetida" : "lista-casillas-fila"} key={indice}>
             <span className="paso-circulo" aria-hidden="true">{indice + 1}</span>
             <div className="lista-casillas-contenido">
               <div className="lista-casillas-campos">
@@ -84,16 +84,21 @@ function ListaCasillas({ id, elementos, onCambiar, singular, textoAgregar, place
                     ? <textarea id={`${id}-${indice}-0`} rows="2" value={elemento} onChange={(evento) => actualizar(indice, evento.target.value)} placeholder={placeholder} aria-label={`${singular} ${indice + 1}`} />
                     : <input id={`${id}-${indice}-0`} value={elemento} onChange={(evento) => actualizar(indice, evento.target.value)} onKeyDown={(evento) => manejarEnter(evento, indice)} placeholder={placeholder} aria-label={`${singular} ${indice + 1}`} />}
               </div>
-              {repetidas[indice] && <p className="lista-casillas-aviso" role="status">Esta {singular} ya está en la lista.</p>}
+              {repetidas[indice] && (
+                <p className="lista-casillas-aviso" role="status">
+                  <span aria-hidden="true" className="material-icons-round">warning_amber</span>
+                  Esta {singular} ya está en la lista.
+                </p>
+              )}
             </div>
             <button type="button" className="boton-icono boton-icono-quitar" onClick={() => quitar(indice)} disabled={lista.length === 1 && estaVacio(elemento)} aria-label={`Quitar ${singular} ${indice + 1}`} title="Quitar">
-              <span aria-hidden="true" className="material-icons">delete_outline</span>
+              <span aria-hidden="true" className="material-icons-round">delete_outline</span>
             </button>
           </li>
         ))}
       </ol>
       <button type="button" className="boton-crear-manual" onClick={agregar}>
-        <span aria-hidden="true" className="material-icons">add</span>
+        <span aria-hidden="true" className="material-icons-round">add</span>
         {textoAgregar}
       </button>
     </div>
