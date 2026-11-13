@@ -1,218 +1,121 @@
-# Integración del sistema de ocupaciones
+# Integración de la solicitud de creación de ocupaciones
 
 Este documento explica cómo llevar el prototipo React al proyecto institucional cuando esté disponible.
 
+## 1. Archivos
 
 Copiar la siguiente estructura dentro de `src/` del proyecto institucional:
 
 ```text
 src/
 ├── components/
-│   ├── SolicitudOcupacion.jsx
-│   ├── BuscadorOcupacion.jsx       # Si existe en el proyecto final
-│   ├── ResultadosOcupacion.jsx
-│   ├── DetalleOcupacion.jsx
-│   └── TabsOcupacion.jsx
+│   ├── SolicitudOcupacion.jsx      # Flujo completo de la solicitud
+│   ├── SolicitudOcupacion.css      # Estilos del formulario (todos bajo .solicitud)
+│   ├── pasosSolicitud.js           # Títulos de los 7 pasos
+│   ├── DatosGenerales.jsx, PropuestaOcupacion.jsx, FuncionesDenominaciones.jsx,
+│   │   Habilidades.jsx, Conocimientos.jsx, Justificacion.jsx, RevisionSolicitud.jsx
+│   ├── CampoTexto.jsx, SelectorBuscable.jsx, ListaCasillas.jsx, TablaCatalogo.jsx,
+│   │   ElementosManuales.jsx, FormularioManual.jsx, Tarjeta.jsx, TarjetaElemento.jsx,
+│   │   ListaAdjuntos.jsx, EncabezadoPaso.jsx, ProgresoFormulario.jsx
+│   ├── DialogoConfirmacion.jsx
+│   └── ConfirmacionSolicitud.jsx
 │
 ├── views/
 │   ├── Inicio.jsx                  # Opcional si ya existe una página de inicio
-│   ├── BuscarOcupacion.jsx
-│   ├── FormularioOcupacion.jsx
-│   └── AdminOcupaciones.jsx
+│   └── FormularioOcupacion.jsx
 │
 ├── data/
-│   └── ocupacionesMock.js          # Solo para desarrollo local
+│   ├── instructivoInstrumento3.js  # Descripción de cada campo
+│   └── instrumento3.models.js      # Catálogos de la CNO
 │
 ├── services/
-│   ├── ocupacionesService.js
-│   └── excelService.js
+│   ├── catalogosCno.js
+│   ├── fichaSolicitud.js
+│   ├── formularioStorage.js
+│   └── solicitudesService.js
 │
 ├── App.jsx
 ├── App.css
 └── index.css
 ```
 
-El componente existente `SolicitudOcupacion.jsx` debe conservarse. En este prototipo se reutiliza desde `FormularioOcupacion.jsx`.
-
 ## 2. Dependencias
 
-El prototipo utiliza:
+El prototipo solo necesita, además de React:
 
 ```bash
-npm install react-router-dom xlsx
+npm install react-router-dom
 ```
+
+En `index.html` se cargan Work Sans (400 y 600) y Material Icons Round desde Google Fonts.
 
 No copiar las carpetas `node_modules/` ni `dist/`.
 
-La dependencia `xlsx` se usa únicamente para leer temporalmente el archivo Excel en el navegador. Antes de producción se recomienda evaluar una alternativa segura o mover el procesamiento al backend.
+## 3. Integración del formulario
 
-## 3. Integración del buscador
+`views/FormularioOcupacion.jsx` muestra `components/SolicitudOcupacion.jsx`, que maneja los 7 pasos, el borrador, la validación y la radicación.
 
-El buscador está compuesto por:
+La radicación está en `services/solicitudesService.js` y se configura en `.env`:
 
-- `views/BuscarOcupacion.jsx`: página pública.
-- `components/ResultadosOcupacion.jsx`: tabla con las columnas `Código` y `Nombre`.
-- `components/DetalleOcupacion.jsx`: detalle de la ocupación seleccionada.
-- `components/TabsOcupacion.jsx`: pestañas del detalle.
-- `services/ocupacionesService.js`: consulta el catálogo activo.
-- `services/excelService.js`: transforma el Excel en ocupaciones.
+| Variable | Uso |
+| --- | --- |
+| `VITE_MODO_SOLICITUDES` | `mock` simula el backend en el navegador; `api` envía al backend. |
+| `VITE_API_URL` | URL del backend para el modo `api`. |
+| `VITE_CORREO_CONTACTO` | Correo que se muestra en la confirmación. Si queda vacío, no se muestra. |
 
-En este prototipo no existe un componente separado llamado
-`BuscadorOcupacion.jsx`; los controles de búsqueda están dentro de la vista
-`BuscarOcupacion.jsx`.
-
-El código de cada resultado funciona como un enlace interno. Al seleccionarlo muestra:
-
-- General.
-- Funciones.
-- Habilidades.
-- Conocimientos.
-- Denominaciones.
-- Relaciones.
-
-En el proyecto institucional, `buscarOcupaciones()` debe reemplazarse progresivamente para consultar la API, sin modificar la interfaz pública.
-
-## 4. Integración del formulario
-
-Archivos relacionados:
-
-- `components/SolicitudOcupacion.jsx`
-- `views/FormularioOcupacion.jsx`
-
-El formulario conserva sus campos y validaciones actuales. Actualmente usa `console.log` y no guarda información en una base de datos.
+En modo `api` la solicitud se envía a `POST /api/public/solicitudes-ocupacion`. El backend asigna el radicado consecutivo y la fecha de registro.
 
 Al integrarlo al proyecto real se debe:
 
 1. Mantener los campos y sus reglas obligatorias.
-2. Reemplazar `console.log` por el servicio o endpoint institucional.
-3. Usar el sistema de autenticación y correo existente si aplica.
+2. Cambiar a modo `api` y apuntar `VITE_API_URL` al backend institucional.
+3. Enviar los archivos adjuntos al backend: hoy solo se registran su nombre, tamaño y tipo.
 4. No duplicar el formulario si ya existe una implementación institucional equivalente.
 
-## 5. Integración del administrador
-
-Archivo principal:
-
-- `views/AdminOcupaciones.jsx`
-
-Servicios utilizados:
-
-- `services/excelService.js`
-- `services/ocupacionesService.js`
-
-El flujo del prototipo es:
-
-```text
-Seleccionar Excel
-        ↓
-Validar extensión y contenido
-        ↓
-Mostrar resumen
-        ↓
-Confirmar publicación
-        ↓
-Actualizar catálogo activo
-```
-
-La vista administrativa debe protegerse en el proyecto institucional mediante el sistema de autenticación y autorización existente. No se debe confiar únicamente en ocultar el enlace del menú.
-
-## 6. Rutas
+## 4. Rutas
 
 El prototipo utiliza estas rutas:
 
 ```text
 /             Inicio público
-/buscar       Buscador público
 /formulario   Solicitud de nueva ocupación
-/admin        Administración del catálogo
 ```
 
-Si el proyecto institucional ya utiliza React Router, agregar únicamente las rutas equivalentes:
+Cualquier otra ruta redirige al inicio.
+
+Si el proyecto institucional ya utiliza React Router, agregar únicamente la ruta del formulario:
 
 ```jsx
-<Route path="/buscar" element={<BuscarOcupacion />} />
 <Route path="/formulario" element={<FormularioOcupacion />} />
-<Route path="/admin" element={<AdminOcupaciones />} />
 ```
 
 No crear un segundo `BrowserRouter` si el proyecto institucional ya tiene uno.
 
-## 7. Cambios en `App.jsx` y `main.jsx`
+## 5. Cambios en `App.jsx` y `main.jsx`
 
 Si el proyecto institucional ya tiene un `App.jsx`, no reemplazarlo completo. Integrar solamente:
 
-- Las importaciones de las vistas.
-- Las rutas.
-- Los enlaces del menú público.
-- El enlace administrativo según permisos.
+- La importación de `FormularioOcupacion`.
+- La ruta `/formulario`.
+- El enlace "Solicitar creación" en el menú público.
 
 Si ya existe un `BrowserRouter` en `main.jsx`, reutilizarlo. Solo debe existir un router principal.
 
-## 8. Estilos
+## 6. Estilos
 
-Copiar las reglas necesarias de `App.css` e `index.css`, pero revisar primero si el proyecto institucional tiene un sistema visual propio.
+Los estilos usan solo la paleta de la guía de marca:
 
-Si existen estilos globales institucionales:
+- Marca: `#7DB728` (botones), `#1FACE3` (uso opcional), `#F1F1F1` (fondo) y `#001631` (textos).
+- Neutrales: `#F1F1F1`, `#D4D4D4`, `#8F8F8F`, `#525252` y `#303030`.
+- Estados: aprobación `#349A00` / `#EBF6E6`, rechazo `#E81C1C` / `#FFE9E9` y advertencia `#FDC300` / `#FFF9E6`.
+
+`SolicitudOcupacion.css` tiene todas sus reglas bajo `.solicitud`, así que no afecta otras pantallas. De `App.css` e `index.css` copiar solo lo necesario, revisando primero si el proyecto institucional tiene un sistema visual propio:
 
 - Priorizar sus variables y componentes.
 - Evitar sobrescribir nombres genéricos como `.boton`, `.campo` o `h1`.
-- Considerar agregar un prefijo, por ejemplo `.ocupaciones-buscador`.
 - Mantener la adaptación responsive.
 
-## 9. Datos mock y catálogo real
-
-`data/ocupacionesMock.js` solo sirve para desarrollo local. No debe utilizarse como fuente definitiva en producción.
-
-Actualmente `ocupacionesService.js` guarda el catálogo activo en `localStorage`. Esto permite probar el flujo, pero no es persistencia institucional.
-
-En el proyecto real, reemplazarlo por:
-
-```text
-Componentes y vistas
-        ↓
-Servicios frontend
-        ↓
-API institucional
-        ↓
-Base de datos
-```
-
-El backend deberá encargarse de:
-
-- Guardar versiones.
-- Validar archivos.
-- Publicar catálogos.
-- Mantener históricos.
-- Garantizar que exista un único catálogo vigente.
-- Controlar permisos administrativos.
-
-## 10. Estructura del Excel
-
-El prototipo reconoce provisionalmente columnas como:
-
-- `Código`.
-- `Nombre`.
-- `Descripción`.
-- `Clasificación`.
-- `Nivel`.
-- `Área de desempeño`.
-
-También intenta leer hojas llamadas:
-
-- `Funciones`.
-- `Habilidades`.
-- `Conocimientos`.
-- `Denominaciones`.
-- `Relaciones`.
-
-Estos nombres no son definitivos. Antes de integrar el importador real:
-
-1. Analizar el Excel institucional.
-2. Documentar sus hojas y columnas.
-3. Definir el mapeo oficial.
-4. Validar tipos, códigos duplicados y campos obligatorios.
-5. Implementar la carga definitiva en el backend si es posible.
-
-## 11. Qué no se debe copiar
+## 7. Qué no se debe copiar
 
 No copiar:
 
@@ -221,29 +124,23 @@ No copiar:
 - El `package.json` completo si el proyecto institucional ya tiene uno.
 - `vite.config.js` si usa otra configuración.
 - `eslint.config.js` sin revisar compatibilidad.
-- `ocupacionesMock.js` como datos de producción.
-- La lógica de `localStorage` como persistencia definitiva.
+- El modo `mock` de `solicitudesService.js` como persistencia definitiva.
 
-## 12. Orden recomendado de integración
+## 8. Orden recomendado de integración
 
 1. Revisar framework, versión de React y router del proyecto institucional.
-2. Copiar los componentes públicos.
-3. Integrar las rutas de búsqueda y formulario.
-4. Conectar `ocupacionesService.js` con la API institucional.
-5. Integrar el detalle y sus pestañas.
-6. Proteger `/admin` con autenticación y permisos.
-7. Reemplazar la lectura local del Excel por el flujo backend.
-8. Probar catálogo vigente, borrador e histórico.
-9. Ejecutar pruebas responsive y de accesibilidad.
+2. Copiar los componentes, vistas, datos y servicios del formulario.
+3. Integrar la ruta `/formulario` y el enlace del menú.
+4. Configurar el modo `api` contra el backend institucional.
+5. Implementar el envío de los archivos adjuntos.
+6. Ejecutar pruebas responsive y de accesibilidad.
 
-## 13. Verificación final
+## 9. Verificación final
 
 Antes de publicar la integración, comprobar:
 
-- La consulta pública no permite editar ni eliminar.
-- El código abre el detalle interno.
-- El buscador usa el catálogo vigente.
-- Un Excel inválido no reemplaza el catálogo vigente.
-- Una nueva publicación conserva la versión anterior como histórica.
-- Solo usuarios autorizados pueden acceder al administrador.
-- Los datos de prueba no se mezclan con datos institucionales.
+- Los campos obligatorios no permiten avanzar vacíos.
+- El borrador se recupera al recargar la página y se borra al cancelar la solicitud.
+- La revisión muestra los obligatorios que falten antes de enviar.
+- Al enviar, el backend devuelve el número de radicado y la pantalla de confirmación lo muestra.
+- Los datos de prueba del modo `mock` no se mezclan con datos institucionales.

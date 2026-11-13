@@ -1,19 +1,16 @@
 # Formulario de ocupaciones
 
-Aplicacion web construida con React y Vite para consultar, solicitar y administrar informacion de ocupaciones laborales.
+Aplicacion web construida con React y Vite para solicitar la creacion de una nueva ocupacion en la Clasificacion Nacional de Ocupaciones (CNO).
 
 ## Que hace el proyecto
 
 El sistema permite:
 
-- Consultar ocupaciones por nombre o codigo.
-- Ver el detalle de una ocupacion en secciones de informacion general, funciones, habilidades, conocimientos, denominaciones y relaciones.
-- Diligenciar una solicitud para crear una nueva ocupacion.
-- Cargar archivos Excel de ocupaciones desde el area administrativa.
-- Validar y publicar un catalogo de ocupaciones.
-- Consultar el historial de versiones del catalogo.
-
-La aplicacion usa datos de prueba incluidos en el proyecto. El catalogo activo y las versiones publicadas se almacenan en `localStorage` del navegador.
+- Diligenciar en 7 pasos una solicitud para crear una nueva ocupacion: datos generales, propuesta, funciones y relaciones, habilidades, conocimientos, justificacion y revision.
+- Guardar el avance automaticamente en el navegador y retomarlo despues.
+- Adjuntar documentos de soporte.
+- Revisar la solicitud completa antes de enviarla.
+- Radicar la solicitud y obtener un numero de radicado consecutivo.
 
 ## Tecnologias
 
@@ -22,9 +19,8 @@ La aplicacion usa datos de prueba incluidos en el proyecto. El catalogo activo y
 - React Router DOM 7
 - Vite 8
 - JavaScript (JSX)
-- XLSX para leer archivos `.xlsx` y `.xls`
 - ESLint
-- Work Sans como tipografia principal
+- Work Sans como tipografia principal y Material Icons Round para los iconos
 
 ## Requisitos
 
@@ -44,7 +40,7 @@ Se recomienda utilizar una version reciente de Node.js compatible con Vite 8.
 2. Entrar en la carpeta del proyecto:
 
    ```bash
-   cd Formulario-/formulario-ocupacion
+   cd Formulario-
    ```
 
 3. Instalar las dependencias:
@@ -81,32 +77,34 @@ npm run preview
 
 | Ruta | Descripcion |
 | --- | --- |
-| `/` | Pagina de inicio y accesos principales. |
-| `/buscar` | Buscador y consulta publica de ocupaciones. |
+| `/` | Pagina de inicio con el acceso a la solicitud. |
 | `/formulario` | Solicitud de creacion de una nueva ocupacion. |
-| `/admin` | Carga, validacion y publicacion del catalogo Excel. |
+
+Cualquier otra ruta redirige al inicio.
 
 ## Estructura principal
 
 ```text
-formulario-ocupacion/
+Formulario-/
 ├── public/
 ├── src/
-│   ├── assets/
 │   ├── components/
-│   │   ├── DetalleOcupacion.jsx
-│   │   ├── ResultadosOcupacion.jsx
-│   │   ├── SolicitudOcupacion.jsx
-│   │   └── TabsOcupacion.jsx
+│   │   ├── SolicitudOcupacion.jsx    # Flujo completo de la solicitud
+│   │   ├── SolicitudOcupacion.css    # Estilos del formulario
+│   │   ├── DatosGenerales.jsx … RevisionSolicitud.jsx   # Un componente por paso
+│   │   ├── CampoTexto.jsx            # Campo con validacion en linea
+│   │   ├── SelectorBuscable.jsx      # Lista desplegable con buscador
+│   │   ├── DialogoConfirmacion.jsx   # Confirmacion de acciones que no se pueden deshacer
+│   │   └── ConfirmacionSolicitud.jsx # Pantalla con el numero de radicado
 │   ├── data/
-│   │   ├── instrumento3.models.js
-│   │   └── ocupacionesMock.js
+│   │   ├── instructivoInstrumento3.js
+│   │   └── instrumento3.models.js
 │   ├── services/
-│   │   ├── excelService.js
-│   │   └── ocupacionesService.js
+│   │   ├── catalogosCno.js
+│   │   ├── fichaSolicitud.js
+│   │   ├── formularioStorage.js
+│   │   └── solicitudesService.js
 │   ├── views/
-│   │   ├── AdminOcupaciones.jsx
-│   │   ├── BuscarOcupacion.jsx
 │   │   ├── FormularioOcupacion.jsx
 │   │   └── Inicio.jsx
 │   ├── App.css
@@ -122,55 +120,42 @@ formulario-ocupacion/
 
 - `App.jsx` define la navegacion principal y las rutas.
 - `views/` contiene las pantallas de la aplicacion.
-- `components/` contiene piezas reutilizables como resultados, detalle, tabs y formulario.
-- `services/ocupacionesService.js` consulta, filtra, guarda y publica el catalogo.
-- `services/excelService.js` procesa los archivos Excel cargados desde administracion.
-- `data/` contiene los datos mock y catalogos usados durante el desarrollo.
-- `App.css` e `index.css` contienen los estilos y tokens visuales institucionales.
+- `components/` contiene los pasos de la solicitud y sus piezas reutilizables.
+- `services/solicitudesService.js` radica la solicitud (modo `mock` en el navegador o modo `api` contra el backend).
+- `services/formularioStorage.js` guarda y recupera el borrador de la solicitud.
+- `data/` contiene los catalogos de la CNO y las descripciones del instructivo del Instrumento 3.
+- `App.css`, `index.css` y `SolicitudOcupacion.css` contienen los estilos con la paleta de la guia de marca.
 
 ## Accesibilidad y semantica
 
 El proyecto utiliza HTML semantico y controles accesibles, entre ellos:
 
-- `header`, `nav`, `main`, `section`, `article`, `aside` y `footer` cuando corresponde.
-- Formularios con `form`, `fieldset`, `legend`, `label`, `input`, `textarea`, `select` y `button`.
+- `header`, `nav`, `main` y `section` cuando corresponde.
+- Formularios con `form`, `fieldset`, `legend`, `label`, `input`, `textarea` y `button`.
 - Labels asociados a sus campos mediante `htmlFor` e `id`.
-- Campos obligatorios con `required`.
-- Tabla semantica para los resultados del buscador.
-- Listas `ul` y `li` para conjuntos de informacion.
-- Pestanas con estados ARIA y navegacion por teclado.
-- Mensajes de error y confirmacion con roles accesibles.
+- Campos obligatorios con `required` y errores en linea asociados con `aria-invalid` y `aria-describedby`.
+- Tablas semanticas para los catalogos de habilidades y conocimientos.
+- Dialogo de confirmacion con `<dialog>` y foco en la opcion segura.
+- Anuncio del paso actual al cambiar de paso y respeto a la preferencia de reducir movimiento.
 - Diseno responsive para pantallas moviles, tabletas y escritorio.
 
-## Catalogo y almacenamiento local
+## Borrador y radicacion
 
-Durante el desarrollo, el catalogo se carga desde `ocupacionesMock.js`. Cuando se publica un archivo Excel, la informacion se guarda en el almacenamiento local del navegador con estas claves:
+El avance de la solicitud se guarda en el `localStorage` del navegador con la clave `formularioOcupacion-v2`. Los archivos adjuntos no se guardan en el borrador. Al cancelar la solicitud, el borrador se elimina.
 
-- `catalogo-ocupaciones-activo`
-- `catalogo-ocupaciones-versiones`
+El modo de radicacion se configura en `.env` con `VITE_MODO_SOLICITUDES`:
 
-Para reiniciar los datos de prueba, se deben eliminar esas claves desde las herramientas de almacenamiento del navegador.
-
-## Flujo administrativo
-
-1. Seleccionar un archivo Excel con extension `.xlsx` o `.xls`.
-2. Validar la extension y el contenido del archivo.
-3. Revisar el resumen de registros encontrados, validos y con errores.
-4. Confirmar la publicacion del catalogo.
-5. Consultar el estado de la version en el historial.
-
-Este prototipo no incluye autenticacion ni backend. En una integracion institucional, la vista administrativa debe protegerse mediante el sistema real de autenticacion y autorizacion.
+- `mock`: simula el backend en el navegador y guarda las solicitudes en `localStorage` con la clave `clasificacion-solicitudes-ocupacion`.
+- `api`: envia la solicitud a `POST /api/public/solicitudes-ocupacion` en la URL indicada por `VITE_API_URL`.
 
 ## Integracion futura
 
 Para llevar el proyecto a un entorno institucional se recomienda:
 
-- Reemplazar los datos mock por una API o servicio institucional.
-- Reemplazar `localStorage` por persistencia en backend.
-- Proteger la ruta administrativa.
-- Sustituir el `console.log` del formulario de solicitud por un endpoint real.
+- Usar el modo `api` contra el backend institucional.
+- Enviar los archivos adjuntos al backend (hoy solo se registran sus nombres).
 - Mantener las interfaces publicas de los componentes y servicios para reducir el impacto de la integracion.
 
 ## Estado del proyecto
 
-El proyecto esta preparado como prototipo funcional frontend. Incluye navegacion, formularios, consulta de ocupaciones, detalle, carga de Excel, validaciones basicas, estilos institucionales y estructura semantica accesible.
+El proyecto esta preparado como prototipo funcional frontend. Incluye la solicitud de creacion de ocupaciones paso a paso, guardado automatico, validaciones, radicacion, estilos institucionales y estructura semantica accesible.

@@ -1,7 +1,5 @@
 import "./App.css";
-import { NavLink, Route, Routes } from "react-router-dom";
-import AdminOcupaciones from "./views/AdminOcupaciones";
-import BuscarOcupacion from "./views/BuscarOcupacion";
+import { Navigate, NavLink, Route, Routes } from "react-router-dom";
 import FormularioOcupacion from "./views/FormularioOcupacion";
 import Inicio from "./views/Inicio";
 
@@ -16,32 +14,19 @@ function App() {
         <nav className="navegacion-principal" aria-label="Navegación principal">
           <NavLink
             className={({ isActive }) => (isActive ? "activo" : "")}
-            to="/buscar"
-          >
-            Buscar ocupación
-          </NavLink>
-          <NavLink
-            className={({ isActive }) => (isActive ? "activo" : "")}
             to="/formulario"
           >
             Solicitar creación
-          </NavLink>
-          <NavLink
-            className={({ isActive }) => (isActive ? "activo" : "")}
-            to="/admin"
-          >
-            Administración
           </NavLink>
         </nav>
       </header>
 
       <Routes>
         <Route path="/" element={<Inicio />} />
-        <Route path="/buscar" element={<BuscarOcupacion />} />
         <Route path="/formulario" element={<FormularioOcupacion />} />
-        <Route path="/admin" element={<AdminOcupaciones />} />
+        {/* Las rutas que ya no existen (como /buscar o /admin) llevan al inicio. */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-
     </>
   );
 }
