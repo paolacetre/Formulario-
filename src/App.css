@@ -122,7 +122,7 @@ textarea { line-height: 1.5; }
 .boton { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 22px; border: 1px solid transparent; border-radius: var(--radio-boton); font-size: var(--texto-parrafo); font-weight: var(--peso-semibold); line-height: 1.2; text-align: center; transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease; }
 .boton:hover { transform: translateY(-1px); }
 .boton:focus-visible { outline: 3px solid rgba(31, 172, 227, 0.3); outline-offset: 2px; }
-.boton-principal { background: var(--verde-principal); color: white; box-shadow: 0 5px 12px rgba(125, 183, 40, 0.2); }
+.boton-principal { background: var(--verde-principal); color: var(--texto); box-shadow: 0 5px 12px rgba(125, 183, 40, 0.2); }
 .boton-principal:hover { background-image: var(--velo); box-shadow: 0 8px 16px rgba(125, 183, 40, 0.25); }
 .boton-secundario { border-color: var(--borde); background: white; color: var(--texto-suave); }
 .boton-secundario:hover { background: var(--neutral-50); }
