@@ -69,7 +69,7 @@
 
 .inicio-acciones { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; margin-top: 30px; }
 .inicio-acciones .boton { margin-top: 0; text-decoration: none; }
-.inicio-card .etiqueta, .inicio-card h1, .inicio-card p { text-align: center; }
+.inicio-card h1, .inicio-card p { text-align: center; }
 
 @media (max-width: 700px) {
   .barra-navegacion { align-items: flex-start; flex-direction: column; padding: 18px 20px; }
