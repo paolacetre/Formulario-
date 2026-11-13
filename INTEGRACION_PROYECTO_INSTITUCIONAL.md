@@ -60,10 +60,16 @@ La radicación está en `services/solicitudesService.js` y se configura en `.env
 | Variable | Uso |
 | --- | --- |
 | `VITE_MODO_SOLICITUDES` | `mock` simula el backend en el navegador; `api` envía al backend. |
-| `VITE_API_URL` | URL del backend para el modo `api`. |
+| `VITE_API_URL` | URL del backend para el modo `api`. Vacía = mismo servidor (Nginx en producción, proxy de Vite en desarrollo). |
+| `API_PROXY_DESTINO` | Solo en desarrollo (`.env.development`): backend al que Vite reenvía `/api`. No llega al navegador. |
 | `VITE_CORREO_CONTACTO` | Correo que se muestra en la confirmación. Si queda vacío, no se muestra. |
 
-En modo `api` la solicitud se envía a `POST /api/public/solicitudes-ocupacion`. El backend asigna el radicado consecutivo y la fecha de registro.
+En modo `api` la solicitud se envía a `POST /api/public/solicitudes-ocupacion` con el cuerpo `{ tipo, datos }`. El backend asigna el radicado consecutivo y la fecha de registro, y debe responder `{ radicado, fechaRegistro }`:
+
+- Sin respuesta en 30 segundos: se cancela el envío y se muestra un aviso.
+- Respuesta sin `radicado`: se trata como error y se pide comunicarse antes de reenviar, para no duplicar la solicitud.
+- `fechaRegistro` ausente o inválida: se usa la hora del envío.
+- Error 429: aviso de demasiadas solicitudes.
 
 Al integrarlo al proyecto real se debe:
 
@@ -144,3 +150,21 @@ Antes de publicar la integración, comprobar:
 - La revisión muestra los obligatorios que falten antes de enviar.
 - Al enviar, el backend devuelve el número de radicado y la pantalla de confirmación lo muestra.
 - Los datos de prueba del modo `mock` no se mezclan con datos institucionales.
+
+## 10. Publicación en la intranet mientras se hace la conexión
+
+La intranet abre el formulario desde un botón que enlaza a la página de inicio (`/`) o directamente a `/formulario`.
+
+**Estado de entrega: modo `mock`** (`VITE_MODO_SOLICITUDES=mock` en `.env`). El formulario funciona completo, pero cada solicitud queda guardada solo en el navegador de quien la diligencia: no llega a la base de datos ni a los analistas. No debe abrirse a usuarios reales hasta conectar la API.
+
+Para conectarlo:
+
+1. En `.env`, cambiar `VITE_MODO_SOLICITUDES=api`.
+2. Dejar `VITE_API_URL` vacío si el servidor de la intranet envía `/api` al backend (como Nginx), o poner la URL del backend.
+3. Volver a generar el build con `npm run build`: Vite copia las variables `VITE_` dentro del build, así que cambiar `.env` sin reconstruir no tiene efecto.
+4. Verificar que `POST /api/public/solicitudes-ocupacion` responda `{ radicado, fechaRegistro }` (ver la sección 3).
+
+En el servidor web:
+
+- Responder `index.html` para cualquier ruta de la aplicación (por ejemplo `/formulario`), porque la navegación la maneja React Router.
+- Si se publica en una subcarpeta (por ejemplo `/ocupaciones/`), configurar `base: '/ocupaciones/'` en `vite.config.js` y `basename="/ocupaciones"` en el `BrowserRouter` de `main.jsx`.

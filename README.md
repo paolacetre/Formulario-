@@ -146,7 +146,9 @@ El avance de la solicitud se guarda en el `localStorage` del navegador con la cl
 El modo de radicacion se configura en `.env` con `VITE_MODO_SOLICITUDES`:
 
 - `mock`: simula el backend en el navegador y guarda las solicitudes en `localStorage` con la clave `clasificacion-solicitudes-ocupacion`.
-- `api`: envia la solicitud a `POST /api/public/solicitudes-ocupacion` en la URL indicada por `VITE_API_URL`.
+- `api`: envia la solicitud a `POST /api/public/solicitudes-ocupacion` en la URL indicada por `VITE_API_URL` y espera `{ radicado, fechaRegistro }`. Si el backend no responde en 30 segundos o responde sin radicado, se muestra un aviso y los datos siguen en el formulario.
+
+En desarrollo, `.env.development` deja `VITE_API_URL` vacio y Vite reenvia `/api` al backend indicado en `API_PROXY_DESTINO` (por defecto `http://localhost:3000`), asi no hace falta configurar CORS. En produccion, Nginx cumple ese papel.
 
 ## Integracion futura
 
