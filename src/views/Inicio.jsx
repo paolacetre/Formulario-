@@ -5,7 +5,6 @@ function Inicio() {
     <main className="pagina">
       <section className="inicio-card">
         <div className="inicio-contenido">
-          <span className="etiqueta">CATÁLOGO DE OCUPACIONES</span>
           <h1>Solicitud nueva ocupación</h1>
           <p>
             Proponga una nueva ocupación para la Clasificación Nacional de
