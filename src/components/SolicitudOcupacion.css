@@ -4,7 +4,8 @@
    en botones, campos y tarjetas (999px en píldoras y botones de ícono); íconos Material Icons Round;
    y solo los colores de la guía de marca (abajo). Reglas de uso:
    - Texto: azul profundo o neutrales. El rojo de rechazo solo como texto sobre blanco (4.5:1).
-   - Verde de marca: botones principales, selección, foco y progreso.
+   - Verde de marca: botones principales, selección, foco y progreso. El texto sobre verde va en azul
+     profundo (7.5:1); en blanco no llega al mínimo de contraste (2.4:1).
    - Colores de estado y azul opcional: fondos, bordes, íconos y acentos, nunca como texto.
    - Las transparencias y el "velo" de hover se derivan de estos mismos colores.
    Todo va dentro de .solicitud para no cambiar las demás vistas. */
@@ -85,7 +86,7 @@
 .progreso-numero { display: grid; place-items: center; width: 36px; height: 36px; border: 1.5px solid var(--s-borde); border-radius: 50%; background: #fff; color: var(--s-gris); font-weight: 600; transition: border-color 0.18s ease, transform 0.18s ease; }
 .progreso-item button:not(:disabled):hover .progreso-numero { border-color: var(--s-verde); transform: scale(1.06); }
 .progreso-item.completada .progreso-numero { border-color: var(--s-ok-fondo); background: var(--s-ok-fondo); color: var(--s-ok); }
-.progreso-item.actual .progreso-numero { border-color: var(--s-verde); background: var(--s-verde); color: #fff; box-shadow: 0 0 0 4px var(--s-verde-suave); }
+.progreso-item.actual .progreso-numero { border-color: var(--s-verde); background: var(--s-verde); color: var(--s-texto); box-shadow: 0 0 0 4px var(--s-verde-suave); }
 .progreso-item.completada button, .progreso-item.actual button { color: var(--s-texto); }
 .progreso-item.actual .progreso-etiqueta { font-weight: 600; }
 .progreso-resumen { display: none; flex-direction: column; gap: 10px; margin: 0; color: var(--s-gris); font-size: 14px; }
@@ -213,7 +214,7 @@
 }
 .solicitud .boton:focus-visible { outline: 3px solid var(--s-verde); outline-offset: 2px; }
 .solicitud .boton:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
-.solicitud .boton-principal { background: var(--s-verde); color: #fff; box-shadow: 0 3px 0 rgba(0, 22, 49, 0.12); }
+.solicitud .boton-principal { background: var(--s-verde); color: var(--s-texto); box-shadow: 0 3px 0 rgba(0, 22, 49, 0.12); }
 .solicitud .boton-principal:hover:not(:disabled) { background-image: var(--s-velo); transform: translateY(-1px); }
 .solicitud .boton-secundario { border-color: transparent; background: var(--s-fondo); color: var(--s-texto); }
 .solicitud .boton-secundario:hover:not(:disabled) { background: var(--s-borde); }
